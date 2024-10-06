@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<body>
+	<style>
+		@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+		body,
+		html {
+			margin: 0;
+			height: 100%;
+			width: 100%;
+		}
+		body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+			background-color: #222;
+			color: #555;
+			font-family: 'Roboto Mono', monospace;
+		}
+		p#type-in {
+			margin: 23.5% 0% 0% 50%;
+			position: absolute;
+			transform: translate(-50%, -50%);
+			font-size: 2em;
+			line-height: 100%;
+			min-height: 1em;
+			padding: 3px;
+			border-right: 3px solid #555;
+		}
+		p#type-after {
+			margin: 26.5% 0% 0% 50%;
+			position: absolute;
+			transform: translate(-50%, -50%);
+			font-size: 1em;
+			line-height: 100%;
+			min-height: 1em;
+			padding: 3px;
+			border-right: 3px solid #222;
+			/* Adds flicker animation of the border to make it look like a typer */
+			animation: flicker 1s linear 1s infinite;
+		}
+		/* Fickeranimation idles between foreground and background with 5% transition time */
+		@keyframes flicker {
+			0% {
+				border-right-color: #555;
+			}
+
+			40% {
+				border-right-color: #555;
+			}
+
+			50% {
+				border-right-color: #222;
+			}
+
+			90% {
+				border-right-color: #222;
+			}
+
+			100% {
+				border-right-color: #555;
+			}
+		}
+	</style>
+
+	<p id="type-in">Error 404</p>
+	<p id="type-after">file not found</p>
+
+	<script>
+		window.onload = function () {
+			// finds #type-in
+			var paragraph = document.getElementById("type-in");
+			var supparagraph = document.getElementById("type-after");
+			// saves its content
+			var text = paragraph.innerHTML;
+			var textafter = supparagraph.innerHTML;
+			// clears content
+			paragraph.innerHTML = "";
+			supparagraph.innerHTML = "";
+
+			// for each letter in its content
+			for (var i = 0, len = text.length; i < len; i++) {
+				(function (i) {
+					window.setTimeout(function () {
+						// adds the letter
+						paragraph.innerHTML += text[i];
+						// waits 0.1s
+					}, i * 100);
+				})(i);
+			}
+			window.setTimeout(function () {
+				paragraph.style.borderRight = "3px solid #222";
+				supparagraph.style.borderRight = "3px solid #555";
+				for (var i = 0, len = textafter.length; i < len; i++) {
+					(function (i) {
+						window.setTimeout(function () {
+							// adds the letter
+							supparagraph.innerHTML += textafter[i];
+							// waits 0.1s
+						}, i * 100);
+					})(i);
+				}
+			}, text.length * 100 + 200);
+		};
+	</script>
+</body>
+
+</html>

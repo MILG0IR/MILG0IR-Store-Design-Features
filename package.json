@@ -1,0 +1,36 @@
+{
+	"name": " MILG0IR Store Design & Features",
+	"description": "MILG0IR Store Design & Features implements tailored functionality and design changes for MILG0IR stores. It modifies the store’s layout, adds custom features, and integrates specific enhancements to streamline the user interface and improve store interaction, all customized for internal use.",
+	"author": "MILG0IR Group",
+	"version": "0.0.1",
+	"main": "main.js",
+	"license": "GPL-2.0+",
+	"keywords": [
+		"wordpress",
+		"wp",
+		"plugin",
+		"modilio",
+		"candlestick",
+		"flooringzen"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MILG0IR/MILG0IR-Store-Design-Features.git"
+	},
+	"scripts": {
+		"build": "webpack --mode production",
+		"dev": "webpack --mode development",
+		"watch": "webpack --watch",
+		"lint": "eslint .",
+		"test": "jest"
+	},
+	"dependencies": {
+		"jquery": "^3.6.0"
+	},
+	"devDependencies": {
+		"webpack": "^5.0.0",
+		"eslint": "^7.0.0",
+		"jest": "^26.0.0"
+	}
+}
+	
