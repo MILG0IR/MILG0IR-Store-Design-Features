@@ -6,12 +6,12 @@
  * @copyright   
  * @license	 GPL-2.0+
  * @link		http://milg0ir.co.uk
- * @version	 0.0.2
+ * @version	 0.0.3
  * 
  * Plugin Name: MILG0IR Store Design & Features
  * Description: Enhances store functionality and design for MILG0IR stores.
  * Plugin URI:	https://github.com/MILG0IR/MILG0IR-Group-store-optimizer
- * Version:	 0.0.2
+ * Version:	 0.0.3
  * Author:	  MILG0IR Group
  * Author URI:  http://milg0ir.co.uk
  * Text Domain: milg0ir-store
@@ -61,11 +61,11 @@ function milg0ir_add_admin_menu() {
 	 * @since 0.0.1
 	 */
 	add_menu_page(
-		__( 'MILG0IR Store Summary', WPS_TEXT_DOMAIN ),	// Page title
+		__( 'MILG0IR ', WPS_TEXT_DOMAIN ),	// Page title
 		__( 'Milg0ir', WPS_TEXT_DOMAIN ),				// Menu title (what appears in the sidebar)
 		'manage_options',								// Capability required to access
 		'mg',											// Menu slug (used in the URL)
-		'page_summary',									// Function to display the page content
+		'page_index',									// Function to display the page content
 		plugin_dir_url(__FILE__) . 'assets/images/logo_transparent.svg',	// Icon for the menu item
 		4												// Position in the admin sidebar (4 puts it near the top)
 	);
@@ -81,10 +81,10 @@ add_action('admin_menu', 'milg0ir_add_admin_menu');
  *
  * @since 0.0.1
  */
-function page_summary() {
+function page_index() {
 	// Load the HTML content from the plugin
 	//print(parse_language_translations('summary.html'));
-	print(get_file_content( 'summary.html' ));
+	print(get_file_content( 'index.html' ));
 }
 /**
  * Page handler for the configuration page.
