@@ -79,8 +79,8 @@
 			<div class="section" id="stampcard">
 				<form method="post" action="options.php">
 					<?php
-						settings_fields('stamp_card_settings_group');	// Register settings group
-						do_settings_sections('stamp-card-settings');	// Display settings sections
+						settings_fields('stampcard_settings_group');	// Register settings group
+						do_settings_sections('stampcard-settings');	// Display settings sections
 						submit_button();								// Display the save button
 					?>
 				</form>

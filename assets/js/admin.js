@@ -6,7 +6,7 @@ jQuery(document).ready(function() {
     const sections = document.querySelectorAll('.milg0ir > .responsive-wrapper');
     const links = document.querySelectorAll('.milg0ir > .responsive-wrapper a[href^="#"]');
 
-	const modeDropdown = document.getElementById('stamp_card_mode');
+	const modeDropdown = document.getElementById('stampcard_mode');
 	const orderBasedFields = document.querySelectorAll('.order_based');
 	const priceBasedFields = document.querySelectorAll('.price_based');
 	const hybridFields = document.querySelectorAll('.hybrid_based');
