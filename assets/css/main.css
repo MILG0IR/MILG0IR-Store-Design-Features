@@ -2,6 +2,9 @@
 :root :where(.wp-block-site-title a:where(:not(.wp-element-button)):hover) {
 	text-decoration: none;
 }
+.wp-block-kadence-column {
+	overflow: visible !important;
+}
 /* PRODUCT TABS */
 .woocommerce div.product .woocommerce-tabs ul.tabs {
 	text-wrap: nowrap;
