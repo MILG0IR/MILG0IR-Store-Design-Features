@@ -18,9 +18,19 @@
 	</div>
 </header>
 <main class="main milg0ir">
+	<div class="responsive-wrapper active">
+		<div class="loader">
+			<svg viewBox="0 0 80 80">
+				<circle id="test" cx="40" cy="40" r="32"></circle>
+			</svg>
+		</div>
+	</div>
 	<div class="responsive-wrapper" id="summary">
 		<div class="main-header">
-			<h1>MILG0IR Store Designs & Features</h1>
+			<span>
+				<h1>MILG0IR Store Designs & Features</h1>
+				<h2>Summary</h2>
+			</span>
 			<div class="search">
 				<input type="text" placeholder="Search" />
 				<button type="submit">
@@ -28,9 +38,57 @@
 				</button>
 			</div>
 		</div>
+		<div class="horizontal-tabs">
+		</div>
+		<div class="content-header" style="display: none;">
+			<div class="content-header-intro">
+				<h2></h2>
+				<p></p>
+			</div>
+			<div class="content-header-actions">
+			</div>
+		</div>
+		<div class="content">
+		</div>
+	</div>
+	<div class="responsive-wrapper" id="configuration">
+		<div class="main-header">
+			<span>
+				<h1>MILG0IR Store Designs & Features</h1>
+				<h2>Configuration</h2>
+			</span>
+			<div class="search">
+				<input type="text" placeholder="Search" />
+				<button type="submit">
+					<i class="dashicons dashicons-search"></i>
+				</button>
+			</div>
+		</div>
+		<div class="horizontal-tabs">
+			<a href="#configuration/stampcard">Stamp Card</a>
+		</div>
+		<div class="content-header" style="display: none;">
+			<div class="content-header-intro">
+				<h2></h2>
+				<p></p>
+			</div>
+			<div class="content-header-actions">
+			</div>
+		</div>
+		<div class="content">
+			<div class="section" id="stampcard">
+				<form method="post" action="options.php">
+					<?php
+						settings_fields('stamp_card_settings_group');	// Register settings group
+						do_settings_sections('stamp-card-settings');	// Display settings sections
+						submit_button();								// Display the save button
+					?>
+				</form>
+			</div>
+		</div>
 	</div>
 
-	<div class="responsive-wrapper active" id="configuration">
+	<div class="responsive-wrapper">
 		<div class="main-header">
 			<h1>Configuration</h1>
 			<div class="search">
