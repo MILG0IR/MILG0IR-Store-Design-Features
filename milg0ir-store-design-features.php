@@ -159,113 +159,41 @@ function custom_taxonomy_collections() {
 	register_taxonomy( 'collection', array( 'product', 'post' ), $args );
 }
 add_action( 'init', 'custom_taxonomy_collections', 0 );
-
 /**
- * Get the content of a file.
- *
- * This function is used to get the content of an HTML file from the
- * plugin's assets directory. It first checks if the file exists in the
- * correct directory, and if so, returns the content of the file. If the
- * file does not exist, it returns the content of the 404.html file if it
- * exists, or a default message if not.
- *
- * @param string $filename The name of the file to get the content of.
- *
- * @return string The content of the file, or a default message if the
- *				file does not exist.
- *
- * @since 0.0.1
+ * Plugin updater handler function.
+ * Pings the Github repo that hosts the plugin to check for updates.
  */
-function get_file_content($filename) {
-	$dir = plugin_dir_path( __FILE__ ) . 'assets/' . pathinfo($filename)['extension'] . '/';
+function prismpress_check_for_plugin_update( $transient ) {
+    // If no update transient or transient is empty, return.
+    if ( empty( $transient->checked ) ) {
+        return $transient;
+    }
 
-	if (file_exists($dir . $filename)) {
-		// Return the content of the file if it exists
-		return file_get_contents($dir . $filename);
-	} else {
-		// Return the content of the 404.html file if it exists
-		if (file_exists($dir . '/404.html')) {
-			return file_get_contents($dir . '/404.html');
-		} else {
-			// Return a default message if the file does not exist
-			return '<p>HTML file not found.</p>';
-		}
-	}
+    // Plugin slug, path to the main plugin file, and the URL of the update server
+    $plugin_slug = 'prismpress/prismpress.php';
+    $update_url = 'https://raw.githubusercontent.com/MILG0IR/MILG0IR-Store-Design-Features/refs/heads/main/update-info.json';
+
+    // Fetch update information from your server
+    $response = wp_remote_get( $update_url );
+    if ( is_wp_error( $response ) ) {
+        return $transient;
+    }
+
+    // Parse the JSON response (update_info.json must return the latest version details)
+    $update_info = json_decode( wp_remote_retrieve_body( $response ) );
+
+    // If a new version is available, modify the transient to reflect the update
+    if ( version_compare( $transient->checked[ $plugin_slug ], $update_info->new_version, '<' ) ) {
+        $plugin_data = array(
+            'slug'        => 'prismpress',
+            'plugin'      => $plugin_slug,
+            'new_version' => $update_info->new_version,
+            'url'         => $update_info->url,
+            'package'     => $update_info->package, // URL of the plugin zip file
+        );
+        $transient->response[ $plugin_slug ] = (object) $plugin_data;
+    }
+
+    return $transient;
 }
-
-/**
- * Replace placeholders in an HTML file with translations.
- *
- * This function is used to generate the content of the admin page by
- * parsing placeholders in the HTML file and replacing them with the
- * translations.
- *
- * @param string $file_path The path to the HTML file that contains the
- *						   placeholders to be replaced.
- *
- * @return string The modified HTML content with placeholders replaced
- *				with translations.
- *
- * @since 0.0.1
- */
-function parse_language_translations( $file_path ) {
-	/**
-	 * Get the content of the HTML file.
-	 *
-	 * @var string $html_content The content of the HTML file.
-	 */
-	$html_content = get_file_content( $file_path );
-
-	/**
-	 * Find all placeholders in the format {{ * }} using regex.
-	 *
-	 * @var array $matches Array containing the matches, where $matches[1]
-	 *					 contains the keys of the placeholders.
-	 *
-	 * The regex pattern matches any string that starts with '{{', followed
-	 * by any characters (including whitespace), and ends with '}}'. The
-	 * parentheses around the inner pattern are used to create a capture
-	 * group, which is stored in $matches[1].
-	 */
-	preg_match_all( '/{{\s*(.*?)\s*}}/', $html_content, $matches );
-
-	/**
-	 * Prepare an array to hold unique translations.
-	 *
-	 * @var array $translations Array containing the translations, where the
-	 *						   key is the original placeholder and the
-	 *						   value is the translated string.
-	 *
-	 * The array is used to store the translations in a way that allows
-	 * us to easily look up the translation for a given placeholder.
-	 */
-	$translations = [];
-	foreach ( $matches[1] as $key ) {
-		$translations[ trim( $key ) ] = esc_html__( trim( $key ), 'milg0ir-store' );
-	}
-
-	/**
-	 * Replace placeholders with translations in the HTML content.
-	 *
-	 * @var string $html_content The modified HTML content with placeholders
-	 *						   replaced with translations.
-	 *
-	 * The foreach loop iterates over the $translations array and
-	 * replaces each placeholder in the HTML content with the
-	 * corresponding translation.
-	 */
-	foreach ( $translations as $key => $translated ) {
-		$html_content = str_replace( "{{ $key }}", $translated, $html_content );
-	}
-
-	/**
-	 * Output the modified HTML.
-	 *
-	 * @return string The modified HTML content with placeholders replaced
-	 *				with translations.
-	 *
-	 * The function returns the modified HTML content, which is then
-	 * used to generate the content of the admin page.
-	 */
-	return $html_content;
-}
+add_filter( 'pre_set_site_transient_update_plugins', 'prismpress_check_for_plugin_update' );
