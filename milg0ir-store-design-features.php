@@ -6,12 +6,12 @@
  * @copyright   
  * @license	 GPL-2.0+
  * @link		http://milg0ir.co.uk
- * @version	 0.0.2
+ * @version	 0.0.3
  * 
  * Plugin Name: MILG0IR Store Design & Features
  * Description: Enhances store functionality and design for MILG0IR stores.
  * Plugin URI:	https://github.com/MILG0IR/MILG0IR-Group-store-optimizer
- * Version:	 0.0.2
+ * Version:	 0.0.3
  * Author:	  MILG0IR Group
  * Author URI:  http://milg0ir.co.uk
  * Text Domain: milg0ir-store
