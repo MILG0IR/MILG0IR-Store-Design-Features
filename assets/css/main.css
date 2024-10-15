@@ -158,3 +158,19 @@
 		border-left: var(--wp--preset--color--primary) .15rem solid;
 	}
 }
+
+/* STAMP CARDS*/
+.stamp-card-info {
+    background-color: #f8f8f8;
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-top: 15px;
+}
+.stamp-card-info img {
+    display: inline-block;
+    margin-right: 10px;
+}
+.stamp-card-info p {
+    margin: 0;
+    font-size: 14px;
+}

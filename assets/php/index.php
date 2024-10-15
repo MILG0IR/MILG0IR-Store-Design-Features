@@ -2,13 +2,14 @@
 	<div class="header-content responsive-wrapper">
 		<div class="header-logo">
 			<div>
-				<img alt="" src="https://modilio.co.uk/wp-content/plugins/MILG0IR-Store-Design-Features/assets/images/logo_transparent.svg" width="32"/>
+				<img alt="" src="/wp-content/plugins/MILG0IR-Store-Design-Features/assets/images/logo/transparent/x32.webp" width="32"/>
 			</div>
 		</div>
 		<div class="header-navigation">
 			<nav class="header-navigation-links">
 				<a href="#summary"> Summary </a>
 				<a href="#configuration"> Configuration </a>
+				<a href="#blocks"> Installed Blocks </a>
 			</nav>
 		</div>
 		<a href="#" class="btn">
@@ -79,11 +80,44 @@
 			<div class="section" id="stampcard">
 				<form method="post" action="options.php">
 					<?php
-						settings_fields('stampcard_settings_group');	// Register settings group
-						do_settings_sections('stampcard-settings');	// Display settings sections
+						settings_fields('mg_stamp_card_settings_group');	// Register settings group
+						do_settings_sections('mg_stamp_card-settings');	// Display settings sections
 						submit_button();								// Display the save button
 					?>
 				</form>
+			</div>
+			<div class="section" id="">
+			</div>
+		</div>
+	</div>
+	<div class="responsive-wrapper" id="blocks">
+		<div class="main-header">
+			<span>
+				<h1>MILG0IR Store Designs & Features</h1>
+				<h2>Provided Blocks</h2>
+			</span>
+			<div class="search">
+				<input type="text" placeholder="Search" />
+				<button type="submit">
+					<i class="dashicons dashicons-search"></i>
+				</button>
+			</div>
+		</div>
+		<div class="horizontal-tabs">
+			<a href="#blocks/installed">Installed</a>
+		</div>
+		<div class="content-header" style="display: none;">
+			<div class="content-header-intro">
+				<h2></h2>
+				<p></p>
+			</div>
+			<div class="content-header-actions">
+			</div>
+		</div>
+		<div class="content">
+			<div class="section" id="installed">
+				<div id="container">
+				</div>
 			</div>
 		</div>
 	</div>
