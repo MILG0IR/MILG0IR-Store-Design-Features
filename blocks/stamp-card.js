@@ -1,7 +1,7 @@
 /*
  * A simple banner block for checkouts to show the value of the stamp or how many stamps the customer may get.
  * 
- * @since 0.0.5
+ * @since 0.0.6
  */
 
 wp.blocks.registerBlockType('milg0ir/stamp-card-preview-block', {
