@@ -9,9 +9,6 @@
 	"tested" : "6.6.2",
 	"requires_php" : "7.4",
 	"last_updated" : "2024-10-20 23:24:00",
-	"dependencies": {
-		"woocommerce": "9.0"
-	},
 	"sections" : {
 		"description" : "This is a simple wordpress plugin designed to improve the overall user experience of an online, ecommerce store for both customers and store owners.",
 		"installation" : "Just click install! 😊",
