@@ -19,6 +19,14 @@
 	define("MG_DIRECTORY_BASENAME", plugin_basename(MG_FILE));
 	define("MG_DIRECTORY_PATH", plugin_dir_path(MG_FILE));
 	define("MG_DIRECTORY_URL", plugins_url(null, MG_FILE));
+	define("MG_STAMPCARD_DEFAULTS", [
+		'mg_stamp_card_enabled' => false,
+		'mg_stamp_card_stamp_count' => 6,
+		'mg_stamp_card_mode' => 'order_based',
+		'mg_price_based_value' => 10,
+		'mg_min_order_value' => 10,
+		'mg_hybrid_discount_percentage' => 10,
+	]);
 //////////!         STYLES AND SCRIPTS           !//////////
 	add_action('wp_enqueue_scripts', function () {
 		wp_enqueue_style('milg0ir-store-style', plugin_dir_url(__FILE__) . 'assets/css/main.css', array(), '1.0.0');
@@ -311,21 +319,15 @@
 	}
 
 //////////!          STAMP CARD OPTIONS          !//////////
-	$stampcard_defaults = [
-		'mg_stamp_card_enabled' => false,
-		'mg_stamp_card_mode' => 'order_based',
-		'mg_price_based_value' => 10,
-		'mg_min_order_value' => 10,
-		'mg_hybrid_discount_percentage' => 10,
-	];
 	add_action('admin_init', function() {
 		// Register settings for the stamp card mode and enable/disable option
-		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_enabled', [ 'default' => $stampcard_defaults['mg_stamp_card_enabled'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_mode', [ 'default' => $stampcard_defaults['mg_stamp_card_mode'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_enabled', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_enabled'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_stamp_count', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_stamp_count'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_mode', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_mode'] ]);
 		// Register settings specific to each mode
-		register_setting('mg_stamp_card_settings_group', 'mg_price_based_value', [ 'default' => $stampcard_defaults['mg_price_based_value'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_min_order_value', [ 'default' => $stampcard_defaults['mg_min_order_value'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_hybrid_discount_percentage', [ 'default' => $stampcard_defaults['mg_hybrid_discount_percentage'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_price_based_value', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_price_based_value'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_min_order_value', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_min_order_value'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_hybrid_discount_percentage', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_hybrid_discount_percentage'] ]);
 
 		// Add a new section to the settings page
 		// This section contains the stamp card mode setting
@@ -334,15 +336,23 @@
 		// Add the checkbox field to enable or disable the stamp card system
 		add_settings_field(
 			'mg_stamp_card_enabled_field',		// ID
-			'Enable Stamp Card System',		// Title
+			'Enable Stamp Card System',			// Title
 			'mg_stamp_card_enabled_checkbox',	// Callback
 			'mg_stamp_card-settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add the dropdown field to select the stamp card mode
 		add_settings_field(
-			'mg_stamp_card_mode_field',		// ID
-			'Stamp Card Mode',				// Title
+			'mg_stamp_card_stamp_count_field',	// ID
+			'Number of stamps per card',		// Title
+			'mg_stamp_card_stamp_count_input',	// Callback
+			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings_section',	// Section
+		);
+		// Add the dropdown field to select the stamp card mode
+		add_settings_field(
+			'mg_stamp_card_mode_field',			// ID
+			'Stamp Card Mode',					// Title
 			'mg_stamp_card_mode_dropdown',		// Callback
 			'mg_stamp_card-settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
@@ -350,23 +360,23 @@
 		// Add settings specific to the Price-Based mode
 		add_settings_field(
 			'mg_price_based_value_field',		// ID
-			'Spend per stamp',				// Title
+			'Spend per stamp',					// Title
 			'mg_price_based_value_input',		// Callback
 			'mg_stamp_card-settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add settings specific to the Price-Based mode
 		add_settings_field(
-			'mg_min_order_value_field',		// ID
-			'Minimum order Value',			// Title
-			'mg_min_order_value_input',		// Callback
+			'mg_min_order_value_field',			// ID
+			'Minimum order Value',				// Title
+			'mg_min_order_value_input',			// Callback
 			'mg_stamp_card-settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add settings specific to the Hybrid mode
 		add_settings_field(
 			'mg_hybrid_discount_percentage_field',	// ID
-			'Percentage value of order',		// Title
+			'Percentage value of order',			// Title
 			'mg_hybrid_discount_percentage_input',	// Callback
 			'mg_stamp_card-settings',				// Page
 			'mg_stamp_card_settings_section',		// Section
@@ -387,10 +397,18 @@
 				<option value="hybrid" ' . (get_option('mg_stamp_card_mode') == 'hybrid'? 'selected="selected"': '') . '>Hybrid</option>
 			</select>
 			<p class="description">
-				Select the stamp card mode: Order-Based, Price-Based, or Hybrid.<br>
+				Select the stamp card mode: Order-Based, Price-Based, or Hybrid. Default: ' . MG_STAMPCARD_DEFAULTS['mg_stamp_card_mode'] . '<br>
 				Order-Based: this mode will add a stamp to the stamp card For each order placed.<br>
 				Price-Based: this mode will add a stamp to the stamp card for each £x spent on the order.<br>
 				Hybrid: this mode will add a stamp to the stamp card for each order. Each stamp has a value of x% of the order, at the end of the stamp card the customer will recieve a coupon code for the same value of the whole stamp card.
+			</p>
+		');
+	}
+	function mg_stamp_card_stamp_count_input() {
+		print('
+			<input type="number" name="mg_stamp_card_stamp_count" value="' . esc_attr(get_option('mg_stamp_card_stamp_count')) . '" />
+			<p class="description">
+				Set the number of stamps per card (Default: '. MG_STAMPCARD_DEFAULTS['mg_stamp_card_stamp_count'] .')
 			</p>
 		');
 	}
@@ -398,7 +416,7 @@
 		print('
 			<input type="number" class="price_based" name="mg_price_based_value" value="' . esc_attr(get_option('mg_price_based_value')) . '" />
 			<p class="description">
-				Set the price value for each stamp. Users can get multiple stamps per order (Default: '. esc_html($currency_symbol) .'10)
+				Set the price value for each stamp. Users can get multiple stamps per order (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['mg_price_based_value'] .')
 			</p>
 		');
 	}
@@ -406,7 +424,7 @@
 		print('
 			<input type="number" class="hybrid_based" name="mg_hybrid_discount_percentage" value="' . esc_attr(get_option('mg_hybrid_discount_percentage')) . '" min="1" max="100" />
 			<p class="description">
-				Set the percentage for the Hybrid mode to allocate to the stamp value (Default: 10%).
+				Set the percentage for the Hybrid mode to allocate to the stamp value (Default: '.MG_STAMPCARD_DEFAULTS['mg_hybrid_discount_percentage'].'%).
 			</p>
 		');
 	}
@@ -416,7 +434,7 @@
 		print('
 			<input type="number" class="min_order" name="mg_min_order_value" value="' . esc_attr(get_option('mg_min_order_value')) . '" />
 			<p class="description">
-				Minimum order value required to earn a stamp. (Default: '. esc_html($currency_symbol) .'10)
+				Minimum order value required to earn a stamp. (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['mg_min_order_value'] .')
 			</p>
 		');
 	}
