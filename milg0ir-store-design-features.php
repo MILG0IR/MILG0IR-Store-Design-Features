@@ -52,7 +52,7 @@
 			'manage_options',					// Capability required to access
 			'mg',								// Menu slug (used in the URL)
 			'page_index',						// Function to display the page content
-			plugin_dir_path(__FILE__) . 'assets/images/logo/transparent/x24.webp',			// Icon for the menu item
+			plugin_dir_path(__FILE__) . 'assets/images/logo/transparent/x32.webp',			// Icon for the menu item
 			4									// Position in the admin sidebar (4 puts it near the top)
 		);
 

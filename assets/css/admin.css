@@ -6,6 +6,8 @@
 	height: 44px;
 	position: relative;
 	left: calc( 50% - 22px );
+	display: inline-block;
+	margin: 0 16px;
 }
 .loader:before {
 	content: "";
@@ -101,25 +103,12 @@
 		stroke-dashoffset: 275;
 	}
 }
-.loader {
-	display: inline-block;
-	margin: 0 16px;
-}
 
 #adminmenu .toplevel_page_mg img {
-	padding: unset !important;
+	padding: 2px !important;
 	max-width: 36px;
 	max-height: 36px;
 	filter: brightness(5);
-	scale: 0.7;
-}
-@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
-#adminmenu .toplevel_page_mg img {
-	padding: unset !important;
-	max-width: 36px;
-	max-height: 36px;
-	filter: brightness(5);
-	scale: 0.7;
 }
 .milg0ir .responsive-wrapper,
 .milg0ir .responsive-wrapper .section {
