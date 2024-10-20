@@ -426,6 +426,7 @@ img {
 .horizontal-tabs a.active {
 	color: var(--c-accent-primary);
 	border-bottom-color: var(--c-accent-primary);
+	box-shadow: unset;
 }
 .horizontal-tabs a + * {
 	margin-left: 1rem;
