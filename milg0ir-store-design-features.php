@@ -204,8 +204,8 @@
 //////////!             PLUGIN LINKS             !//////////
 	add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
 	function add_action_links($links) {
-		array_unshift($links, '<a href="#" onclick="location.reload()">' . __('Check for Update', 'milg0ir-store') . '</a>');
-		array_unshift($links, '<a href="admin.php?page=mg">' . __('Settings', 'milg0ir-store') . '</a>');
+		array_unshift($links, '<a href="/wp-admin/update-core.php" >' . __('Check for Update', 'milg0ir-store') . '</a>');
+		array_unshift($links, '<a href="/wp-admin/admin.php?page=mg">' . __('Settings', 'milg0ir-store') . '</a>');
 		return $links;
 	}
 
