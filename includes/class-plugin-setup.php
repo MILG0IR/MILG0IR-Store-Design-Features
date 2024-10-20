@@ -24,7 +24,7 @@ class Plugin_Setup {
         Custom_Taxonomy::init();
 		Endpoints::init();
 		Stamp_Card::init();
-		Updater::init();
+		//Updater::init();
 		Wishlist::init();
 	}
 

@@ -27,6 +27,13 @@ class Wishlist {
     }
 
     /**
+     * Display the content for the Wishlist endpoint in the My Account section.
+     */
+    public static function wishlist_content() {
+        require_once plugin_dir_path(__FILE__) . '../assets/php/wishlist.php';
+    }
+
+    /**
      * Add the Wishlist link to the My Account menu in WooCommerce.
      *
      * @param array $items Array of account menu items.
@@ -35,12 +42,5 @@ class Wishlist {
     public static function add_wishlist_to_account_menu($items) {
         $items['wishlist'] = __('Wishlist', 'MG_TEXT_DOMAIN');
         return $items;
-    }
-
-    /**
-     * Display the content for the Wishlist endpoint in the My Account section.
-     */
-    public static function wishlist_content() {
-        require_once plugin_dir_path(__FILE__) . '../assets/php/wishlist.php';
     }
 }

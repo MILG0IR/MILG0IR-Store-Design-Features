@@ -1,10 +1,8 @@
-/*
- * A simple banner block for checkouts to show the value of the stamp or how many stamps the customer may get.
- * 
- * @since 0.0.6
- */
+const { registerBlockType } = wp.blocks;
+const { useSelect } = useSelect;
+const { InnerBlocks } = InnerBlocks;
 
-wp.blocks.registerBlockType('milg0ir/stamp-card-preview-block', {
+registerBlockType('milg0ir/stamp-card-preview-block', {
 	title: 'Stamp Card Preview',
 	description: 'Displays the value of a stamp or how many stamps a customer may get. Automatically hides if the user has disabled stamp cards.',
 	icon: 'visibility',
@@ -30,7 +28,7 @@ wp.blocks.registerBlockType('milg0ir/stamp-card-preview-block', {
 			React.Fragment,
 			null,
 			React.createElement(
-				wp.blockEditor.InspectorControls,
+				InnerBlocks.InspectorControls,
 				null,
 				React.createElement(
 					wp.components.PanelBody,
