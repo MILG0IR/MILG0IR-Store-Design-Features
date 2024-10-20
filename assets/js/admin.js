@@ -21,17 +21,7 @@ jQuery(document).ready(function() {
 	 */
 	window.addEventListener('hashchange', showSection);
 	modeDropdown.addEventListener('change', toggleFields);
-
-	/**
-	 * Function to show the relevant section and sub-sections based on the URL hash.
-	 * 
-	 * @description
-	 * This function will hide all sections and sub-sections initially, then show the
-	 * relevant section and sub-sections based on the URL hash. If there's no hash, or
-	 * the hash doesn't match any sections, it will do nothing.
-	 * 
-	 * @since 0.0.3
-	 */
+	
 	function showSection() {
 		// Hide all sections and sub-sections initially
 		sections.forEach(section => {

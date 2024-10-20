@@ -3,7 +3,7 @@
  * Plugin Name: MILG0IR Store Design & Features
  * Description: Enhances store functionality and design for MILG0IR stores.
  * Plugin URI:	https://github.com/MILG0IR/MILG0IR-Store-Design-Features
- * Version:		0.0.4a
+ * Version:		0.0.4
  * Author:		MILG0IR Group
  * Author URI:	https://milg0ir.co.uk
  * Text Domain: milg0ir-store
@@ -57,55 +57,26 @@
 
 //////////!              TAXONOMY                !//////////
 	add_action('init', function () {
-
-		/**
-		 * Define the labels for the taxonomy.
-		 *
-		 * This array contains the text strings that are displayed in the
-		 * WordPress admin UI for the taxonomy.
-		 *
-		 * @since 0.0.1
-		 */
-		$labels = array(
-			'name'				=> 'Collections',
-			'singular_name'		=> 'Collection',
-			'search_items'		=> 'Search Collections',
-			'all_items'			=> 'All Collections',
-			'parent_item'		=> 'Parent Collection',
-			'parent_item_colon'	=> 'Parent Collection:',
-			'edit_item'			=> 'Edit Collection',
-			'update_item'		=> 'Update Collection',
-			'add_new_item'		=> 'Add New Collection',
-			'new_item_name'		=> 'New Collection Name',
-			'menu_name'			=> 'Collections',
-		);
-
-		/**
-		 * Define the arguments for the taxonomy.
-		 *
-		 * This array contains the arguments that are passed to the
-		 * register_taxonomy() function.
-		 *
-		 * @since 0.0.1
-		 */
-		$args = array(
+		register_taxonomy('collection', array('product', 'post'), array(
 			'hierarchical'		=> true, // Like categories (or false if like tags)
-			'labels'			=> $labels,
+			'labels'			=> array(
+				'name'				=> 'Collections',
+				'singular_name'		=> 'Collection',
+				'search_items'		=> 'Search Collections',
+				'all_items'			=> 'All Collections',
+				'parent_item'		=> 'Parent Collection',
+				'parent_item_colon'	=> 'Parent Collection:',
+				'edit_item'			=> 'Edit Collection',
+				'update_item'		=> 'Update Collection',
+				'add_new_item'		=> 'Add New Collection',
+				'new_item_name'		=> 'New Collection Name',
+				'menu_name'			=> 'Collections',
+			),
 			'show_ui'			=> true,
 			'show_admin_column'	=> true,
 			'query_var'			=> true,
 			'rewrite'			=> array('slug' => 'collection'),
-		);
-
-		/**
-		 * Register the taxonomy.
-		 *
-		 * This registers the taxonomy with WordPress and makes it available
-		 * for use.
-		 *
-		 * @since 0.0.1
-		 */
-		register_taxonomy('collection', array('product', 'post'), $args);
+		));
 	}, 0);
 
 
@@ -200,7 +171,8 @@
 	
 		$remote = json_decode(wp_remote_retrieve_body($remote));
 	
-		$current_version = '0.0.4'; // Replace with your plugin's current version dynamically if possible
+		$current_version = get_plugin_data( __FILE__ )['Version'];
+
 		if (
 			$remote &&
 			version_compare($current_version, $remote->version, '<') &&
