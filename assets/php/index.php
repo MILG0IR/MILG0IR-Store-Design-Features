@@ -2,7 +2,7 @@
 	<div class="header-content responsive-wrapper">
 		<div class="header-logo">
 			<div>
-				<img alt="" src="/wp-content/plugins/MILG0IR-Store-Design-Features/assets/images/logo/transparent/x32.webp" width="32"/>
+				<img alt="" src="/wp-content/plugins/MILG0IR-Store-Design-Features/assets/images/logo/transparent/x128.webp" width="32"/>
 			</div>
 		</div>
 		<div class="header-navigation">

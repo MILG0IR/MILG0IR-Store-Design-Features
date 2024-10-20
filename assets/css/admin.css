@@ -104,11 +104,16 @@
 	}
 }
 
+#adminmenu .current.toplevel_page_mg img {
+	filter: invert(0) !important;
+}
+
 #adminmenu .toplevel_page_mg img {
-	padding: 2px !important;
-	max-width: 36px;
-	max-height: 36px;
-	filter: brightness(5);
+	padding: 3px !important;
+	max-width: 30px;
+	max-height: 30px;
+	filter: invert(1);
+	opacity: 1;
 }
 .milg0ir .responsive-wrapper,
 .milg0ir .responsive-wrapper .section {
