@@ -6,13 +6,13 @@
 	"version" : "0.0.6",
 	"download_url" : "https://github.com/MILG0IR/MILG0IR-Store-Design-Features/releases/download/v0.0.5/MILG0IR-Store-Design-Features.zip",
 	"requires" : "3.0",
-	"tested" : "6.6",
+	"tested" : "6.6.2",
 	"requires_php" : "5.3",
 	"last_updated" : "2024-10-17 21:45:00",
 	"sections" : {
-		"description" : "This simple plugin does nothing, only gets updates from a custom server",
+		"description" : "This is a simple plugin that ",
 		"installation" : "Click the activate button and that's it.",
-		"changelog" : "<h4>1.0:  17 October 2024</h4><ul><li>Bug fixes.</li><li>Initital release.</li></ul>"
+		"changelog" : "<h4>1.0:  17 October 2024</h4> <ul><li>Bug fixes.</li><li>Initital release.</li></ul><p>For the full changelog, visit <a href='https://github.com/MILG0IR/MILG0IR-Store-Design-Features/blob/main/CHANGELOG.md' target='_blank'>GitHub Changelog</a>.</p>"
 	},
 	"banners" : {
 		"low" : "https://rudrastyh.com/wp-content/uploads/updater/banner-772x250.jpg",
