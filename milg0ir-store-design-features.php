@@ -3,7 +3,7 @@
  * Plugin Name: MILG0IR Store Design & Features
  * Description: Enhances store functionality and design for MILG0IR stores.
  * Plugin URI:	https://github.com/MILG0IR/MILG0IR-Store-Design-Features
- * Version:		0.0.4
+ * Version:		0.0.5
  * Author:		MILG0IR Group
  * Author URI:	https://milg0ir.co.uk
  * Text Domain: milg0ir-store

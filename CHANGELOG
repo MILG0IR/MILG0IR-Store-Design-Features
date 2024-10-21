@@ -14,15 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic language functionality.
 - [DELAYED] Attempts to create the plugin in a namespace/class hierarchy.
 - Added plugin page links.
-- [INDEV] Added my-account page nav block.
+- Added my-account page nav block.
 
 ### Fixed
 
-- The plugins update functionality has not been repaired and is fully functinal.
+- The plugins update functionality has now been repaired and is fully functinal.
 
 ### Changed
 
-- additions, changes and removals are now on this page, not in the code.
+- additions, changes and removals are now on this page, not in the code in an attempt to make the source less cluttered.
 
 ## [v0.0.4a]
 
