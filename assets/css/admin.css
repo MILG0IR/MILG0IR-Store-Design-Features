@@ -144,11 +144,6 @@ body {
 	color: var(--c-text-primary);
 }
 
-img {
-	display: block;
-	max-width: 100%;
-}
-
 :focus {
 	outline: 0;
 }
