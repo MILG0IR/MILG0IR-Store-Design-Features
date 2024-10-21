@@ -20,18 +20,32 @@
 	define("MG_DIRECTORY_PATH", plugin_dir_path(MG_FILE));
 	define("MG_DIRECTORY_URL", plugins_url(null, MG_FILE));
 	define("MG_STAMPCARD_DEFAULTS", [
-		'mg_stamp_card_enabled' => false,
-		'mg_stamp_card_stamp_count' => 6,
-		'mg_stamp_card_mode' => 'order_based',
-		'mg_price_based_value' => 10,
-		'mg_min_order_value' => 10,
-		'mg_hybrid_discount_percentage' => 10,
+		'enabled' => false,
+		'stamp_count' => 6,
+		'mode' => 'order_based',
+		'price_based_value' => 10,
+		'min_order_value' => 10,
+		'hybrid_discount_percentage' => 10,
+	]);
+	define("MG_WISHLIST_DEFAULTS", [
+		'enabled' => true
+	]);
+	define("MG_TAXONOMIES_DEFAULTS", [
+		'enabled' => true,
+		'max' => 100,
+		'total_qty' => 1
 	]);
 //////////!         STYLES AND SCRIPTS           !//////////
 	add_action('wp_enqueue_scripts', function () {
 		wp_enqueue_style('milg0ir-store-style', plugin_dir_url(__FILE__) . 'assets/css/main.css', array(), '1.0.0');
+		wp_enqueue_style('milg0ir-store-icons', plugin_dir_url(__FILE__) . 'assets/css/icons.css', array(), '1.0.0');
+
 		wp_enqueue_script('milg0ir-store-script', plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), '1.0.0', true);
-		
+		wp_localize_script('milg0ir-store-script', 'mg_localization', [
+			'stampCardEnabled' => get_option('mg_stamp_card_enabled'),
+			'wishlistEnabled' => get_option('mg_wishlist_enabled'),
+		]);
+
 		if (is_cart() || is_checkout() || is_front_page() || is_product()) {
 			wp_enqueue_script('mg_cart_stamp_card_display', plugin_dir_url(__FILE__) . 'assets/js/cart_stamp_card_display.js', array('jquery'), '1.0.0', true);
 			wp_localize_script('mg_cart_stamp_card_display', 'cart_params', array(
@@ -39,8 +53,11 @@
 			));
 		}
 	});
+
 	add_action('admin_enqueue_scripts', function () {
 		wp_enqueue_style('milg0ir-store-admin-style', plugin_dir_url(__FILE__) . 'assets/css/admin.css', array(), '1.0.0');
+		wp_enqueue_style('milg0ir-store-icons', plugin_dir_url(__FILE__) . 'assets/css/icons.css', array(), '1.0.0');
+
 		wp_enqueue_script('milg0ir-store-admin-script', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery'), '1.0.0', true);
 	});
 
@@ -97,12 +114,12 @@
 		if ('plugin_information' !== $action) {
 			return $res;
 		}
-	
+
 		// do nothing if it is not our plugin
 		if (plugin_basename(__FILE__) !== $args->slug) {
 			return $res;
 		}
-	
+
 		$remote = wp_remote_get(
 			'https://raw.githubusercontent.com/MILG0IR/MILG0IR-Store-Design-Features/main/update-info.json',
 			array(
@@ -112,7 +129,7 @@
 				)
 			)
 		);
-	
+
 		if (
 			is_wp_error($remote) ||
 			200 !== wp_remote_retrieve_response_code($remote) ||
@@ -120,9 +137,9 @@
 		) {
 			return $res;
 		}
-	
+
 		$remote = json_decode(wp_remote_retrieve_body($remote));
-	
+
 		$res = new stdClass();
 		$res->name = $remote->name;
 		$res->slug = $remote->slug;
@@ -140,25 +157,25 @@
 			'installation' => $remote->sections->installation,
 			'changelog' => $remote->sections->changelog
 		);
-	
+
 		if (!empty($remote->sections->screenshots)) {
 			$res->sections['screenshots'] = $remote->sections->screenshots;
 		}
-	
+
 		$res->banners = array(
 			'low' => $remote->banners->low,
 			'high' => $remote->banners->high
 		);
-	
+
 		error_log(print_r($res, true)); // Log the data for debugging
 		return $res;
 	}
-	
+
 	function push_update($transient) {
 		if (empty($transient->checked)) {
 			return $transient;
 		}
-	
+
 		$remote = wp_remote_get(
 			'https://raw.githubusercontent.com/MILG0IR/MILG0IR-Store-Design-Features/main/update-info.json',
 			array(
@@ -168,7 +185,7 @@
 				)
 			)
 		);
-	
+
 		if (
 			is_wp_error($remote) ||
 			200 !== wp_remote_retrieve_response_code($remote) ||
@@ -176,9 +193,9 @@
 		) {
 			return $transient;
 		}
-	
+
 		$remote = json_decode(wp_remote_retrieve_body($remote));
-	
+
 		$current_version = get_plugin_data( __FILE__ )['Version'];
 
 		if (
@@ -195,11 +212,10 @@
 			$res->package = $remote->download_url;
 			$transient->response[$res->plugin] = $res;
 		}
-	
+
 		//	print_r($res, true); // Log the data for debugging
 		return $transient;
 	}
-	
 
 //////////!             PLUGIN LINKS             !//////////
 	add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'add_action_links');
@@ -236,7 +252,7 @@
 				array(
 					'slug'  => 'milg0ir-blocks',
 					'title' => 'MILG0IR Blocks',
-					'icon'  => plugin_dir_path(__FILE__) . 'assets/images/logo/transparent/x24.webp',
+					'icon'  => plugin_dir_path(__FILE__) . 'assets/images/logo/transparent/x64.webp',
 				),
 			)
 		);
@@ -253,19 +269,23 @@
 		register_block_type('milg0ir/stamp-card-preview-block', array(
 			'editor_script' => 'stamp-card-preview-block',
 		));
-		
+
 		wp_register_script(
-			'my-account-nav',
+			'account-nav',
 			plugin_dir_url(__FILE__) . 'blocks/account-nav.js',
 			array('wp-blocks', 'wp-element', 'wp-editor', 'wp-data'),
 			filemtime(plugin_dir_path(__FILE__) . 'blocks/account-nav.js'),
 			true
 		);
-		register_block_type('milg0ir/my-account-nav', array(
-			'editor_script' => 'my-account-nav',
+		wp_localize_script('account-nav', 'mg_localization', [
+			'stampCardEnabled' => get_option('mg_stamp_card_enabled'),
+			'wishlistEnabled' => get_option('mg_wishlist_enabled'),
+		]);
+		register_block_type('milg0ir/account-nav', array(
+			'editor_script' => 'account-nav',
 		));
-	});
 
+	});
 //////////!           CUSTOM REST API            !//////////
 	add_action('rest_api_init', function () {
 		register_rest_route('milg0ir/v1', '/stamp-card-data', array(
@@ -321,24 +341,24 @@
 //////////!          STAMP CARD OPTIONS          !//////////
 	add_action('admin_init', function() {
 		// Register settings for the stamp card mode and enable/disable option
-		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_enabled', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_enabled'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_stamp_count', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_stamp_count'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_mode', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_stamp_card_mode'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_enabled', [ 'default' => MG_STAMPCARD_DEFAULTS['enabled'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_stamp_count', [ 'default' => MG_STAMPCARD_DEFAULTS['stamp_count'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_stamp_card_mode', [ 'default' => MG_STAMPCARD_DEFAULTS['mode'] ]);
 		// Register settings specific to each mode
-		register_setting('mg_stamp_card_settings_group', 'mg_price_based_value', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_price_based_value'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_min_order_value', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_min_order_value'] ]);
-		register_setting('mg_stamp_card_settings_group', 'mg_hybrid_discount_percentage', [ 'default' => MG_STAMPCARD_DEFAULTS['mg_hybrid_discount_percentage'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_price_based_value', [ 'default' => MG_STAMPCARD_DEFAULTS['price_based_value'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_min_order_value', [ 'default' => MG_STAMPCARD_DEFAULTS['min_order_value'] ]);
+		register_setting('mg_stamp_card_settings_group', 'mg_hybrid_discount_percentage', [ 'default' => MG_STAMPCARD_DEFAULTS['hybrid_discount_percentage'] ]);
 
 		// Add a new section to the settings page
 		// This section contains the stamp card mode setting
-		add_settings_section('mg_stamp_card_settings_section', 'Stamp Card Configuration', null, 'mg_stamp_card-settings');
+		add_settings_section('mg_stamp_card_settings_section', 'Stamp Card Configuration', null, 'mg_stamp_card_settings');
 
 		// Add the checkbox field to enable or disable the stamp card system
 		add_settings_field(
 			'mg_stamp_card_enabled_field',		// ID
 			'Enable Stamp Card System',			// Title
 			'mg_stamp_card_enabled_checkbox',	// Callback
-			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add the dropdown field to select the stamp card mode
@@ -346,7 +366,7 @@
 			'mg_stamp_card_stamp_count_field',	// ID
 			'Number of stamps per card',		// Title
 			'mg_stamp_card_stamp_count_input',	// Callback
-			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add the dropdown field to select the stamp card mode
@@ -354,7 +374,7 @@
 			'mg_stamp_card_mode_field',			// ID
 			'Stamp Card Mode',					// Title
 			'mg_stamp_card_mode_dropdown',		// Callback
-			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add settings specific to the Price-Based mode
@@ -362,7 +382,7 @@
 			'mg_price_based_value_field',		// ID
 			'Spend per stamp',					// Title
 			'mg_price_based_value_input',		// Callback
-			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add settings specific to the Price-Based mode
@@ -370,7 +390,7 @@
 			'mg_min_order_value_field',			// ID
 			'Minimum order Value',				// Title
 			'mg_min_order_value_input',			// Callback
-			'mg_stamp_card-settings',			// Page
+			'mg_stamp_card_settings',			// Page
 			'mg_stamp_card_settings_section',	// Section
 		);
 		// Add settings specific to the Hybrid mode
@@ -378,64 +398,133 @@
 			'mg_hybrid_discount_percentage_field',	// ID
 			'Percentage value of order',			// Title
 			'mg_hybrid_discount_percentage_input',	// Callback
-			'mg_stamp_card-settings',				// Page
+			'mg_stamp_card_settings',				// Page
 			'mg_stamp_card_settings_section',		// Section
 		);
 	});
 
 	function mg_stamp_card_enabled_checkbox() {
 		print('
-			<input type="checkbox" name="mg_stamp_card_enabled" value="1" ' . (get_option('mg_stamp_card_enabled')? 'checked="checked': '') . ' />
-			<label for="mg_stamp_card_enabled">Enable the stamp card system on the site.</label>
-		');
+				<input type="checkbox" name="mg_stamp_card_enabled" value="1" ' . (get_option('mg_stamp_card_enabled')? 'checked="checked': '') . ' />
+				<label for="mg_stamp_card_enabled">Enable the stamp card system on the site.</label>
+			');
 	}
 	function mg_stamp_card_mode_dropdown() {
 		print('
-			<select name="mg_stamp_card_mode" id="mg_stamp_card_mode">
-				<option value="order_based" ' . (get_option('mg_stamp_card_mode') == 'order_based'? 'selected="selected"': '') . '>Order-Based</option>
-				<option value="price_based" ' . (get_option('mg_stamp_card_mode') == 'price_based'? 'selected="selected"': '') . '>Price-Based</option>
-				<option value="hybrid" ' . (get_option('mg_stamp_card_mode') == 'hybrid'? 'selected="selected"': '') . '>Hybrid</option>
-			</select>
-			<p class="description">
-				Select the stamp card mode: Order-Based, Price-Based, or Hybrid. Default: ' . MG_STAMPCARD_DEFAULTS['mg_stamp_card_mode'] . '<br>
-				Order-Based: this mode will add a stamp to the stamp card For each order placed.<br>
-				Price-Based: this mode will add a stamp to the stamp card for each £x spent on the order.<br>
-				Hybrid: this mode will add a stamp to the stamp card for each order. Each stamp has a value of x% of the order, at the end of the stamp card the customer will recieve a coupon code for the same value of the whole stamp card.
-			</p>
-		');
+				<select name="mg_stamp_card_mode" id="mg_stamp_card_mode">
+					<option value="order_based" ' . (get_option('mg_stamp_card_mode') == 'order_based'? 'selected="selected"': '') . '>Order-Based</option>
+					<option value="price_based" ' . (get_option('mg_stamp_card_mode') == 'price_based'? 'selected="selected"': '') . '>Price-Based</option>
+					<option value="hybrid" ' . (get_option('mg_stamp_card_mode') == 'hybrid'? 'selected="selected"': '') . '>Hybrid</option>
+				</select>
+				<p class="description">
+					Select the stamp card mode: Order-Based, Price-Based, or Hybrid. Default: ' . MG_STAMPCARD_DEFAULTS['mode'] . '<br>
+					Order-Based: this mode will add a stamp to the stamp card For each order placed.<br>
+					Price-Based: this mode will add a stamp to the stamp card for each £x spent on the order.<br>
+					Hybrid: this mode will add a stamp to the stamp card for each order. Each stamp has a value of x% of the order, at the end of the stamp card the customer will recieve a coupon code for the same value of the whole stamp card.
+				</p>
+			');
 	}
 	function mg_stamp_card_stamp_count_input() {
 		print('
-			<input type="number" name="mg_stamp_card_stamp_count" value="' . esc_attr(get_option('mg_stamp_card_stamp_count')) . '" />
-			<p class="description">
-				Set the number of stamps per card (Default: '. MG_STAMPCARD_DEFAULTS['mg_stamp_card_stamp_count'] .')
-			</p>
-		');
+				<input type="number" name="mg_stamp_card_stamp_count" value="' . esc_attr(get_option('mg_stamp_card_stamp_count')) . '" />
+				<p class="description">
+					Set the number of stamps per card (Default: '. MG_STAMPCARD_DEFAULTS['stamp_count'] .')
+				</p>
+			');
 	}
 	function mg_price_based_value_input() {
 		print('
-			<input type="number" class="price_based" name="mg_price_based_value" value="' . esc_attr(get_option('mg_price_based_value')) . '" />
-			<p class="description">
-				Set the price value for each stamp. Users can get multiple stamps per order (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['mg_price_based_value'] .')
-			</p>
-		');
+				<input type="number" class="price_based" name="mg_price_based_value" value="' . esc_attr(get_option('mg_price_based_value')) . '" />
+				<p class="description">
+					Set the price value for each stamp. Users can get multiple stamps per order (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['price_based_value'] .')
+				</p>
+			');
 	}
 	function mg_hybrid_discount_percentage_input() {
 		print('
-			<input type="number" class="hybrid_based" name="mg_hybrid_discount_percentage" value="' . esc_attr(get_option('mg_hybrid_discount_percentage')) . '" min="1" max="100" />
-			<p class="description">
-				Set the percentage for the Hybrid mode to allocate to the stamp value (Default: '.MG_STAMPCARD_DEFAULTS['mg_hybrid_discount_percentage'].'%).
-			</p>
-		');
+				<input type="number" class="hybrid_based" name="mg_hybrid_discount_percentage" value="' . esc_attr(get_option('mg_hybrid_discount_percentage')) . '" min="1" max="100" />
+				<p class="description">
+					Set the percentage for the Hybrid mode to allocate to the stamp value (Default: '.MG_STAMPCARD_DEFAULTS['hybrid_discount_percentage'].'%).
+				</p>
+			');
 	}
 	function mg_min_order_value_input() {
 		$currency_symbol = get_woocommerce_currency_symbol();
 
 		print('
-			<input type="number" class="min_order" name="mg_min_order_value" value="' . esc_attr(get_option('mg_min_order_value')) . '" />
-			<p class="description">
-				Minimum order value required to earn a stamp. (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['mg_min_order_value'] .')
-			</p>
-		');
+				<input type="number" class="min_order" name="mg_min_order_value" value="' . esc_attr(get_option('mg_min_order_value')) . '" />
+				<p class="description">
+					Minimum order value required to earn a stamp. (Default: '. esc_html($currency_symbol) . MG_STAMPCARD_DEFAULTS['min_order_value'] .')
+				</p>
+			');
+	}
+//////////!           WISHLIST OPTIONS           !//////////
+	add_action('admin_init', function() {
+		// Register settings for the stamp card mode and enable/disable option
+		register_setting('mg_wishlist_settings_group', 'mg_wishlist_enabled', [ 'default' => MG_WISHLIST_DEFAULTS['enabled'] ]);
+
+		// Add a new section to the settings page
+		// This section contains the stamp card mode setting
+		add_settings_section('mg_wishlist_settings_section', 'Wishlist Configuration', null, 'mg_wishlist_settings');
+
+		// Add the checkbox field to enable or disable the stamp card system
+		add_settings_field(
+			'mg_wishlist_enabled_field',	// ID
+			'Enable Wishlist System',		// Title
+			'mg_wishlist_enabled_checkbox',	// Callback
+			'mg_wishlist_settings',			// Page
+			'mg_wishlist_settings_section',	// Section
+		);
+	});
+
+	function mg_wishlist_enabled_checkbox() {
+		print('
+				<input type="checkbox" name="mg_wishlist_enabled" value="1" ' . (get_option('mg_wishlist_enabled')? 'checked="checked': '') . ' />
+				<label for="mg_wishlist_enabled">Enable the wishlist system on the site.</label>
+			');
+	}
+
+//////////!          TAXONOMIES OPTIONS          !////////// TODO: Custom taxonomies, create up to 100 seperate taxonomies
+	add_action('admin_init', function() {
+		// Register settings for the stamp card mode and enable/disable option
+		register_setting('mg_taxonomies_settings_group', 'mg_taxonomies_enabled', [ 'default' => MG_TAXONOMIES_DEFAULTS['enabled'] ]);
+		register_setting('mg_taxonomies_settings_group', 'mg_taxonomies_total_qty', [ 'default' => MG_TAXONOMIES_DEFAULTS['total_qty'] ]);
+
+		// Add a new section to the settings page
+		// This section contains the stamp card mode setting
+		add_settings_section('mg_taxonomies_settings_section', 'Taxonomies Configuration', null, 'mg_taxonomies_settings');
+
+		// Add the checkbox field to enable or disable the stamp card system
+		add_settings_field(
+			'mg_taxonomies_enabled_field',		// ID
+			'Enable Custom Taxonomies',			// Title
+			'mg_taxonomies_enabled_checkbox',	// Callback
+			'mg_taxonomies_settings',			// Page
+			'mg_taxonomies_settings_section',	// Section
+		);
+
+		// Add the checkbox field to enable or disable the stamp card system
+		add_settings_field(
+			'mg_taxonomies_total_qty_field',	// ID
+			'Total number of cutom taxonomies',	// Title
+			'mg_taxonomies_total_qty_input',	// Callback
+			'mg_taxonomies_settings',			// Page
+			'mg_taxonomies_settings_section',	// Section
+		);
+	});
+
+	function mg_taxonomies_enabled_checkbox() {
+		print('
+				<input type="checkbox" name="mg_taxonomies_enabled" value="1" ' . (get_option('mg_taxonomies_enabled')? 'checked="checked"': '') . ' />
+				<label for="mg_taxonomies_enabled">Enable the custom taxonomies system on the site. (Default: '.MG_TAXONOMIES_DEFAULTS['enabled'].').</label>
+			');
+	}
+	function mg_taxonomies_total_qty_input() {
+		print('
+				<input type="number" name="mg_taxonomies_total_qty" value="' . get_option('mg_taxonomies_total_qty') . '" min="1" max="'.MG_TAXONOMIES_DEFAULTS['total_qty'].'" />
+				<p class="description">
+					How many custom taxonomies would you like? (Default: '.MG_TAXONOMIES_DEFAULTS['total_qty'].', Max: '.MG_TAXONOMIES_DEFAULTS['total_qty'].'). 
+				</p>
+			');
 	}
 //////////!										 !//////////

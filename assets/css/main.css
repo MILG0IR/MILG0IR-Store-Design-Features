@@ -174,3 +174,51 @@
     margin: 0;
     font-size: 14px;
 }
+
+body.logged-in .mg-account-nav {
+    display: block !important;
+}
+
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+	.mg-navigation-link .icon {
+		display: inline;
+		margin-right: unset;
+	}
+	.mg-navigation-link .title {
+		display: none;
+	}
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+	.mg-navigation-link .icon {
+		display: none;
+		margin-right: unset;
+	}
+	.mg-navigation-link .title {
+		display: inline;
+	}
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+	.mg-navigation-link .icon {
+		display: inline;
+		margin-right: .5rem;
+	}
+	.mg-navigation-link .title {
+		display: inline;
+	}
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+	
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+	
+}

@@ -1,8 +1,4 @@
-const { registerBlockType } = wp.blocks;
-const { useSelect } = useSelect;
-const { InnerBlocks } = InnerBlocks;
-
-registerBlockType('milg0ir/stamp-card-preview-block', {
+wp.blocks.registerBlockType('milg0ir/stamp-card-preview-block', {
 	title: 'Stamp Card Preview',
 	description: 'Displays the value of a stamp or how many stamps a customer may get. Automatically hides if the user has disabled stamp cards.',
 	icon: 'visibility',
@@ -28,7 +24,7 @@ registerBlockType('milg0ir/stamp-card-preview-block', {
 			React.Fragment,
 			null,
 			React.createElement(
-				InnerBlocks.InspectorControls,
+				wp.blockEditor.InspectorControls,
 				null,
 				React.createElement(
 					wp.components.PanelBody,

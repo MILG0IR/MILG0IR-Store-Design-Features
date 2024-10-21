@@ -1,8 +1,7 @@
 jQuery(document).ready(function() {
-	// Announce plugin activation.
-	console.log('MILG0IR Store Design & Features loaded');
-
-	// Defines sections
+	/*
+	 * Defines constants
+	 */
 	const sections = document.querySelectorAll('.milg0ir > .responsive-wrapper');
 	const links = document.querySelectorAll('.milg0ir > .responsive-wrapper a[href^="#"]');
 
@@ -17,11 +16,14 @@ jQuery(document).ready(function() {
 	toggleFields();
 
 	/*
-	 * Javascript Hooks
+	 * Hooks
 	 */
 	window.addEventListener('hashchange', showSection);
 	modeDropdown.addEventListener('change', toggleFields);
-	
+
+	/*
+	 * Functions
+	 */
 	function showSection() {
 		// Hide all sections and sub-sections initially
 		sections.forEach(section => {
