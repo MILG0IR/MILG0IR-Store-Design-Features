@@ -5,3 +5,4 @@
 ----------------------------------------------------------------
 
 - When installing the plugin, it doesnt actually mark the wishlists as enabled by default.
+- Complianz logo and others are slightly off on the admin side panel.
