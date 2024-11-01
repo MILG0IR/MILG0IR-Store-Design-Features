@@ -21,7 +21,7 @@ jQuery(document).ready(function($) {
 				},
 
 				success: function(response) {
-					console.log(response.message);
+					//console.log(response.message);
 					$('.wp-block-milg0ir-stamp-card-preview-block').find('p').text(response.message);
 				},
 				error: function(xhr, status, error) {

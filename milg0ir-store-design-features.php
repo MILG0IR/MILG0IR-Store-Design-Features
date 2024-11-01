@@ -44,6 +44,7 @@
 		wp_localize_script('milg0ir-store-script', 'mg_localization', [
 			'stampCardEnabled' => get_option('mg_stamp_card_enabled'),
 			'wishlistEnabled' => get_option('mg_wishlist_enabled'),
+			'ajax_url' => admin_url('admin-ajax.php'),
 		]);
 
 		if (is_cart() || is_checkout() || is_front_page() || is_product()) {
@@ -458,6 +459,226 @@
 				</p>
 			');
 	}
+//////////!               WISHLIST               !//////////
+	function mg_get_existing_schema($table_name) {
+		global $wpdb;
+		$result = $wpdb->get_row("SHOW CREATE TABLE $table_name", ARRAY_A);
+		if ($result) {
+			return $result['Create Table'];
+		} else {
+			return null;
+		}
+	}
+
+	function mg_parse_create_table_sql($schema) {
+		$columns = [];
+		preg_match_all('/^\s*`(\w+)`\s+[^,]+/m', $schema, $matches);
+		if (!empty($matches[1])) {
+			foreach ($matches[1] as $index => $col_name) {
+				$columns[$col_name] = trim($matches[0][$index]);
+			}
+		}
+		return $columns;
+	}
+
+	function mg_update_database($desired_schema, $existing_schema) {
+		global $wpdb;
+
+		// If the table does not exist, create it
+		if (!$existing_schema) {
+			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+			dbDelta($desired_schema);
+			return;
+		}
+
+		// Compare column definitions
+		$desired_columns = mg_parse_create_table_sql($desired_schema);
+		$current_columns = mg_parse_create_table_sql($existing_schema);
+
+		// Generate ALTER TABLE statements for missing or modified columns
+		$alter_statements = [];
+		foreach ($desired_columns as $col_name => $col_def) {
+			if (!isset($current_columns[$col_name])) {
+				$alter_statements[] = "ADD COLUMN $col_def";
+			} elseif ($current_columns[$col_name] !== $col_def) {
+				$alter_statements[] = "MODIFY COLUMN $col_def";
+			}
+		}
+
+		// Execute ALTER TABLE statements if any differences were found
+		if (!empty($alter_statements)) {
+			$sql = "ALTER TABLE $table_name " . implode(', ', $alter_statements);
+			$wpdb->query($sql);
+		}
+	}
+
+	function update_for_wishlist_table() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_wishlists';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$existing_schema = mg_get_existing_schema($table_name);
+		$desired_schema = "CREATE TABLE `".$table_name."` (
+			`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			`user_id` bigint(20) unsigned NOT NULL,
+			`product_id` bigint(20) unsigned NOT NULL,
+			`product_options` text,
+			`date_added` datetime DEFAULT current_timestamp(),
+			`date_removed` datetime DEFAULT NULL,
+			`product_options` TEXT,
+			PRIMARY KEY (`id`)
+			FOREIGN KEY (`user_id`) REFERENCES wp_users(ID) ON DELETE CASCADE
+		) $charset_collate;";
+		mg_update_database($desired_schema, $existing_schema);
+	}
+	register_activation_hook(__FILE__, 'update_for_wishlist_table');
+	function update_for_stampcard_table() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_stampcards';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$existing_schema = mg_get_existing_schema($table_name);
+		$desired_schema = "CREATE TABLE `$table_name` (
+			`id` BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+			`user_id` BIGINT(20) UNSIGNED NOT NULL,
+			`order_id` BIGINT(20) UNSIGNED DEFAULT NULL,
+			`total_stamps` INT(11) NOT NULL,
+			`date_earned` DATETIME DEFAULT CURRENT_TIMESTAMP,
+			`stamp_value` DECIMAL(10, 2) DEFAULT 0.00,
+			`redeemed` BOOLEAN DEFAULT FALSE,
+			UNIQUE KEY user_stamp_unique (`user_id`, `order_id`),
+			FOREIGN KEY (`user_id`) REFERENCES wp_users(ID) ON DELETE CASCADE
+		) $charset_collate;";
+		mg_update_database($desired_schema, $existing_schema);
+	}
+	register_activation_hook(__FILE__, 'update_for_stampcard_table');
+
+
+	function mg_add_to_wishlist($user_id, $product_id, $product_options = null) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_wishlists';
+
+		// Check if the item with options already exists
+		$exists = $wpdb->get_var($wpdb->prepare(
+			"SELECT id FROM $table_name WHERE user_id = %d AND product_id = %d AND product_options = %s", 
+			$user_id, 
+			$product_id,
+			json_encode($product_options)
+		));
+
+		if (!$exists) {
+			$wpdb->insert(
+				$table_name,
+				array(
+					'user_id' => $user_id,
+					'product_id' => $product_id,
+					'product_options' => json_encode($product_options)
+				),
+				array(
+					'%d',
+					'%d',
+					'%s'
+				)
+			);
+		}
+	}
+	function mg_check_wishlist($user_id, $product_id, $product_options = null) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_wishlists';
+
+		$is_in_wishlist = $wpdb->get_var($wpdb->prepare(
+			"SELECT COUNT(*) FROM $table_name WHERE user_id = %d AND product_id = %d AND product_options = %s",
+			$user_id,
+			$product_id,
+			$options
+		)) > 0;
+
+		if ($is_in_wishlist) {
+			wp_send_json_success();
+		} else {
+			wp_send_json_error();
+		}
+	}
+	function mg_remove_from_wishlist($user_id, $product_id) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_wishlists';
+
+		$wpdb->delete(
+			$table_name, 
+			array(
+				'user_id' => $user_id,
+				'product_id' => $product_id
+			),
+			array('%d', '%d')
+		);
+	}
+	function mg_get_wishlist($user_id) {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_wishlists';
+
+		return $wpdb->get_results($wpdb->prepare(
+			"SELECT product_id, product_options FROM $table_name WHERE user_id = %d", 
+			$user_id
+		));
+	}
+
+	function mg_add_to_wishlist_ajax() {
+		$user_id = get_current_user_id();
+		$product_id = intval($_POST['product_id']);
+		$product_options = isset($_POST['product_options']) ? json_decode(stripslashes($_POST['product_options']), true) : [];
+	
+		if ($user_id && $product_id) {
+			mg_add_to_wishlist($user_id, $product_id, $product_options);
+			wp_send_json_success('Added to wishlist!');
+		} else {
+			wp_send_json_error('Failed to add to wishlist.');
+		}
+	}
+	add_action('wp_ajax_mg_add_to_wishlist_ajax', 'mg_add_to_wishlist_ajax');
+
+	function mg_remove_from_wishlist_ajax() {
+		$user_id = get_current_user_id();
+		$product_id = intval($_POST['product_id']);
+
+		if ($user_id && $product_id) {
+			mg_remove_from_wishlist($user_id, $product_id);
+			wp_send_json_success('Removed from wishlist!');
+		} else {
+			wp_send_json_error('Failed to remove from wishlist.');
+		}
+	}
+	add_action('wp_ajax_mg_remove_from_wishlist_ajax', 'mg_remove_from_wishlist_ajax');
+
+	function mg_check_wishlist_ajax() {
+		$user_id = get_current_user_id();
+		$product_id = intval($_POST['product_id']);
+		$product_options = isset($_POST['product_options']) ? json_decode(stripslashes($_POST['product_options']), true) : [];
+	
+		if ($user_id && $product_id) {
+			mg_check_wishlist($user_id, $product_id, $product_options);
+			wp_send_json_success('Added to wishlist!');
+		} else {
+			wp_send_json_error('Failed to add to wishlist.');
+		}
+	}
+	add_action('wp_ajax_mg_check_wishlist', 'mg_check_wishlist_ajax');
+
+	function mg_wishlist_button() {
+		global $product;
+		// Output a heart icon with a unique ID for each product.
+		print('
+			<div class="mg-add-to-wishlist-group">
+				<input id="wishlist" name="wishlist" title="title" type="checkbox" class="mg-add-to-wishlist" data-product-id="' . esc_attr($product->get_id()) . '"/>
+				<label for="wishlist" data-hover-text="Wish List" style="vertical-align: middle;">
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" x="0px" y="0px" viewBox="0 0 100 100">
+						<g transform="translate(0,-952.36218)"><path style="color:#000000;enable-background:accumulate;" d="m 34.166665,972.36218 c -11.41955,0 -19.16666,8.91891 -19.16666,20.27029 0,19.45943 15,27.56753 35,39.72973 20.00001,-12.1622 34.99999,-20.2703 34.99999,-39.72973 0,-11.35137 -7.7471,-20.27029 -19.16665,-20.27029 -7.35014,0 -13.39148,4.05405 -15.83334,6.48647 -2.44185,-2.43241 -8.48319,-6.48647 -15.83334,-6.48647 z" fill="transparent" id="heart-path" stroke="#737373" stroke-width="5" marker="none" visibility="visible" display="inline" overflow="visible"/></g>
+					</svg>
+				</label>
+			</div>
+		');
+	}
+	add_action('woocommerce_after_add_to_cart_button', 'mg_wishlist_button', 10);
+
 //////////!           WISHLIST OPTIONS           !//////////
 	add_action('admin_init', function() {
 		// Register settings for the stamp card mode and enable/disable option

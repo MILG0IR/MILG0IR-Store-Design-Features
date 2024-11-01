@@ -161,27 +161,86 @@
 
 /* STAMP CARDS*/
 .stamp-card-info {
-    background-color: #f8f8f8;
-    padding: 10px;
-    border: 1px solid #ddd;
-    margin-top: 15px;
+	background-color: #f8f8f8;
+	padding: 10px;
+	border: 1px solid #ddd;
+	margin-top: 15px;
 }
 .stamp-card-info img {
-    display: inline-block;
-    margin-right: 10px;
+	display: inline-block;
+	margin-right: 10px;
 }
 .stamp-card-info p {
-    margin: 0;
-    font-size: 14px;
+	margin: 0;
+	font-size: 14px;
 }
 
 body.logged-in .mg-account-nav {
-    display: block !important;
+	display: block !important;
 }
 
 
+/* Wishlist */
+
+.mg_wishlist_item {
+    display: flex;
+    width: 100%;
+    margin-left: unset;
+    position: relative;
+    text-decoration: none;
+    padding-bottom: 1rem;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.mg_wishlist_item::after {
+	content: "";
+	width: 80%;
+	height: 1px;
+	background: silver;
+	position: absolute;
+	bottom: 0;
+	left: 10%;
+}
+.mg_wishlist_item:last-child::after {
+	content: none;
+}
+
+.mg_wishlist_item_image {
+	width: 25%;
+	display: block;
+	flex-basis: auto;
+	align-self: auto;
+	order: 0;
+}
+.mg_wishlist_item_info {
+	margin-left: 1rem;
+	width: calc(75% - 1rem);
+	display: block;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: auto;
+	align-self: auto;
+	order: 1;
+}
+.mg_wishlist_item_title {
+	width: 100%;
+	line-height: 0;
+}
+.mg_wishlist_item_description {
+	color: var(--wp--preset--color--base);
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+}
+.mg_wishlist_item_options {
+	color: var(--wp--preset--color--base);
+}
+
 /* Extra small devices (phones, 600px and down) */
-@media only screen and (max-width: 600px) {
+@media (max-width: 600px) {
 	.mg-navigation-link .icon {
 		display: inline;
 		margin-right: unset;
@@ -192,7 +251,7 @@ body.logged-in .mg-account-nav {
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {
+@media (min-width: 600px) {
 	.mg-navigation-link .icon {
 		display: none;
 		margin-right: unset;
@@ -203,7 +262,7 @@ body.logged-in .mg-account-nav {
 }
 
 /* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {
+@media (min-width: 768px) {
 	.mg-navigation-link .icon {
 		display: inline;
 		margin-right: .5rem;
@@ -214,11 +273,136 @@ body.logged-in .mg-account-nav {
 }
 
 /* Large devices (laptops/desktops, 992px and up) */
-@media only screen and (min-width: 992px) {
-	
+@media (min-width: 992px) {
+	.mg_wishlist_item {
+		width: 80%;
+		margin-left: 10%;
+	}
 }
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
-@media only screen and (min-width: 1200px) {
-	
+@media (min-width: 1200px) {
+
+}
+
+
+
+
+
+
+
+
+
+.mg-add-to-wishlist-group {
+	display: inline-block;
+	height: 40px;
+	position: relative;
+	width: 40px;
+}
+.mg-add-to-wishlist-group input[type=checkbox] {
+	left: -999999px;
+	position: absolute;
+	top: -999999px;
+}
+.mg-add-to-wishlist-group input[type=checkbox] + label svg {
+	transform: rotate(0deg);
+}
+.mg-add-to-wishlist-group input[type=checkbox]:checked + label svg {
+	-webkit-animation: wishlist-heart-wiggle 400ms 50ms forwards ease-in-out;
+	animation: wishlist-heart-wiggle 400ms 50ms forwards ease-in-out;
+}
+.mg-add-to-wishlist-group input[type=checkbox]:checked + label svg #heart-path {
+	-webkit-animation: wishlist-heart-add 300ms forwards;
+	animation: wishlist-heart-add 300ms forwards;
+	stroke: #f8332a;
+}
+.mg-add-to-wishlist-group input[type=checkbox] + label svg #heart-path {
+	transition: fill 200ms;
+}
+.mg-add-to-wishlist-group input[type=checkbox] + label:hover svg #heart-path {
+	transition: stroke 150ms linear;
+	stroke: #f8332a;
+}
+.mg-add-to-wishlist-group input[type=checkbox] + label:before {
+	align-items: center;
+	background-color: #000;
+	border-radius: 3px;
+	box-sizing: border-box;
+	color: #FFF;
+	content: attr(data-hover-text);
+	display: flex;
+	font-size: 0.8em;
+	height: 25px;
+	justify-content: center;
+	left: 50%;
+	line-height: 1;
+	opacity: 0;
+	padding: 0.5em;
+	position: absolute;
+	text-align: center;
+	top: -2.25em;
+	transform: translateX(-50%);
+	transition: opacity 100ms linear;
+	white-space: pre;
+}
+.mg-add-to-wishlist-group input[type=checkbox] + label:hover:before {
+	opacity: 1;
+	transition-delay: 400ms;
+}
+.mg-add-to-wishlist-group label {
+	display: inline-block;
+	position: relative;
+	width: 100%;
+}
+@-webkit-keyframes wishlist-heart-wiggle {
+	0% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(-10deg);
+	}
+	75% {
+		transform: rotate(8deg);
+	}
+	100% {
+		transform: rotate(0deg);
+	}
+}
+@keyframes wishlist-heart-wiggle {
+	0% {
+		transform: rotate(0deg);
+	}
+	25% {
+		transform: rotate(-10deg);
+	}
+	75% {
+		transform: rotate(8deg);
+	}
+	100% {
+		transform: rotate(0deg);
+	}
+}
+@-webkit-keyframes wishlist-heart-add {
+	0% {
+		stroke-width: 5;
+	}
+	50% {
+		stroke-width: 20;
+	}
+	100% {
+		fill: #f8332a;
+		stroke-width: 5;
+	}
+}
+@keyframes wishlist-heart-add {
+	0% {
+		stroke-width: 5;
+	}
+	50% {
+		stroke-width: 20;
+	}
+	100% {
+		fill: #f8332a;
+		stroke-width: 5;
+	}
 }

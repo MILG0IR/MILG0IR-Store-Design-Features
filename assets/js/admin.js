@@ -61,6 +61,8 @@ jQuery(document).ready(function() {
 					link.classList.add('active');
 				}
 			});
+		} else {
+			window.location.replace(window.location + '#summary');
 		}
 	};
 	function toggleFields() {
