@@ -2,7 +2,7 @@
 	"name": "MILG0IR Store Design & Features",
 	"description": "MILG0IR Store Design & Features implements tailored functionality and design changes for MILG0IR stores. It modifies the store’s layout, adds custom features, and integrates specific enhancements to streamline the user interface and improve store interaction, all customized for internal use.",
 	"author": "MILG0IR Group",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"main": "main.js",
 	"license": "GPL-3.0",
 	"keywords": [

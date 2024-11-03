@@ -318,6 +318,11 @@ body.logged-in .mg-account-nav {
 }
 .mg-add-to-wishlist-group input[type=checkbox] + label svg #heart-path {
 	transition: fill 200ms;
+	stroke: #737373;
+}
+.mg-add-to-wishlist-group input[type=checkbox]:disabled + label svg #heart-path,
+.mg-add-to-wishlist-group input[type=checkbox]:disabled + label:hover svg #heart-path {
+	stroke: #adacac;
 }
 .mg-add-to-wishlist-group input[type=checkbox] + label:hover svg #heart-path {
 	transition: stroke 150ms linear;

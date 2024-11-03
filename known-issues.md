@@ -18,7 +18,7 @@ The labels i will use to tag each issue will be as follows.
 ![High Priority](https://img.shields.io/badge/Priority-High-purple)
 
 ----------------------------------------------------------------
-
+****
 | ID | Status | Priority | Description |
 | --- | --- | --- | --- |
 | 1. | ![Issue](https://img.shields.io/badge/Issue-red)   | ![High Priority](https://img.shields.io/badge/High-purple) | When installing the plugin, it doesnt actually mark the wishlists as enabled by default. |

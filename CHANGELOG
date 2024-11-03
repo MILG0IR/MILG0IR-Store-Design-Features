@@ -5,14 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.0.5-Unreleased]
+## [v0.0.6]
+
+### Added
+
+- New Wishlist button on product pages
+- New wishlist page in 'my-account' page
+- New wishlist section in admin pages
+
+### Fixed
+
+- [v0.0.5-1](https://github.com/MILG0IR/MILG0IR-Store-Design-Features/blob/main/known-issues.md) Complianz logo and others are slightly off on the admin side panel.
+
+## [v0.0.5]
 
 ### Added
 
 - Custom stamp card block to display the stamps/value potential for each order.
 - Basic rest api to get the stamps/value potential for each order.
 - Basic language functionality.
-- [DELAYED] Attempts to create the plugin in a namespace/class hierarchy.
 - Added plugin page links.
 - Added my-account page nav block.
 
@@ -23,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - additions, changes and removals are now on this page, not in the code in an attempt to make the source less cluttered.
+
+### Delayed Changed
+
+- [DELAYED] Attempts to create the plugin in a namespace/class hierarchy.
 
 ## [v0.0.4a]
 
