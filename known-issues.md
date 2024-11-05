@@ -4,7 +4,7 @@
 
 This list will be reset after each version. Any unfixed issues will continue on to the next version, any Fixed issues will be dropped from the list.
 
-#### Labels
+### Labels
 
 The labels i will use to tag each issue will be as follows.
 
@@ -18,9 +18,9 @@ The labels i will use to tag each issue will be as follows.
 ![High Priority](https://img.shields.io/badge/Priority-High-purple)
 
 ----------------------------------------------------------------
-****
-| ID | Status | Priority | Description |
+
+| ID  | Status | Priority | Description |
 | --- | --- | --- | --- |
-| 1. | ![Issue](https://img.shields.io/badge/Issue-red)   | ![High Priority](https://img.shields.io/badge/High-purple) | When installing the plugin, it doesnt actually mark the wishlists as enabled by default. |
-| 2. | ![Fixed](https://img.shields.io/badge/Fixed-green) |![Low Priority](https://img.shields.io/badge/Low-blue) | Complianz logo and others are slightly off on the admin side panel. |
-| 3. | ![Issue](https://img.shields.io/badge/Issue-red)   | ![Purely Cosmetic](https://img.shields.io/badge/Cosmetic-yellow) | When loading the admin menu, There is no load page. It leaves just a blank page. - to fix, load the summary page (to be populated at a later date) |
+| 1.  | ![Fixed](https://img.shields.io/badge/Fixed-green) | ![High Priority](https://img.shields.io/badge/High-purple) | When installing the plugin, it doesnt actually mark the wishlists as enabled by default. |
+| 2.  | ![Fixed](https://img.shields.io/badge/Fixed-green) | ![Low Priority](https://img.shields.io/badge/Low-blue) | Complianz logo and others are slightly off on the admin side panel. |
+| 3.  | ![Fixed](https://img.shields.io/badge/Fixed-green) | ![Purely Cosmetic](https://img.shields.io/badge/Cosmetic-yellow) | When loading the admin menu, There is no load page. It leaves just a blank page. - to fix, load the summary page (to be populated at a later date) |
