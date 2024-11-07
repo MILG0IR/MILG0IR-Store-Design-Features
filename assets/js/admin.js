@@ -127,6 +127,7 @@ jQuery(document).ready(function($) {
     }
     function calculateSuggestedPrice() {
         let total = 0;
+		let margin = $('.mg_pricing_margin').val();
 
         $('.mg-price-calculator-section').each(function() {
             const selectedValue = parseFloat($(this).find('select').val()) || 0;
@@ -134,7 +135,8 @@ jQuery(document).ready(function($) {
 
             total += selectedValue * quantity;
         });
-
-        $('#mg_price_calculator #mg_suggested_price').text(total.toFixed(2));
+		let retailValue = (total / (100 - margin)) * 100;
+        $('#mg_price_calculator #mg_suggested_price').text(retailValue.toFixed(2));
     }
+	
 });

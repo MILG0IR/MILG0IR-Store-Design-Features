@@ -763,59 +763,118 @@
 	add_action('add_meta_boxes', 'mg_price_calculator_meta_box');
 
 	function mg_price_calculator($post) {
+		$post_id = $post->ID;
 		$pricing_data = get_option('mg_dynamic_pricing_data'); // Retrieve all options saved in admin settings
+		print('
+			<style>
+				.mg-price-calculator-section label h4 {
+					margin-bottom: 5px;
+					text-transform: capitalize;
+				}
+				.mg-price-calculator-input {
+					display: flex;
+					align-items: center;
+				}
+				.mg-price-calculator-input > select {
+					width: 40%;
+				}
+				.mg-price-calculator-input > input {
+					width: 60%;
+				}
+			</style>
+		');
 		
+
 		if (!empty($pricing_data)) {
 			foreach ($pricing_data as $index => $section) {
 				print('
 				<div class="mg-price-calculator-section">
-					<label for="mg_price_calculator_' . esc_attr($section['title']) . '">' . esc_html($section['title']) . '</label>
-					<br/>
-					<select id="mg_price_calculator_' . esc_attr($section['title']) . '" name="mg_price_calculator_' . esc_attr($section['title']) . '">
-						<option value="0">Select ' . esc_html($section['title']) . '</option>');
+					<label for="mg_price_calculator_' . urlencode($section['title']) . '"><h4>' . esc_html($section['title']) . ':</h4></label>
+					<div class="mg-price-calculator-input">
+						<select id="mg_price_calculator_' . urlencode($section['title']) . '" name="mg_price_calculator_' . urlencode($section['title']) . '">
+							<option value="0">Select</option>');
 
 				foreach ($section['options'] as $option) {
-					print('<option value="' . esc_attr($option['value']) . '">' . esc_html($option['name']) . '</option>');
+					$selected = urlencode(get_post_meta($post_id, 'mg_price_calculator_'.urlencode($section['title']), true)) == urlencode($option['value'])? 'selected': '';
+					print('<option value="' . urlencode($option['value']) . '" '.$selected.'>' . esc_html($option['name']) . '</option>');
 				}
 
-				print('</select><input type="number" id="mg_quantity_' . esc_attr($section['title']) . '" name="mg_quantity_' . esc_attr($section['title']) . '" placeholder="Enter quantity" min="0" step="1"></div>');
+				print('</select><input type="number" id="mg_quantity_' . urlencode($section['title']) . '" name="mg_quantity_' . urlencode($section['title']) . '" placeholder="Enter quantity" min="0" step="0.01" value="'.get_post_meta($post_id, 'mg_quantity_'.urlencode($section['title']), true).'" ></div></div>');
 			}
 		} else {
 			print('<p>No options configured in the settings.</p>');
 		}
-		
-		print('<p><strong>Suggested Price: </strong><span id="mg_suggested_price">0.00</span></p>');
+
+		print('<div class="mg-price-calculator-section"><h4>Margin %: </h4><input type="number" class="mg_pricing_margin" name="mg_pricing_margin" placeholder="Enter margin" min="0" step=".1" value="'.get_option('mg_pricing_margin').'"></div>');
+		print('<p><strong>Suggested Price: </strong><h1 id="mg_suggested_price">0.00</h1></p>');
+
+		wp_nonce_field('mg_save_price_calculator_data', 'mg_price_calculator_nonce');
 	}
 
-//////////!       PRICE CALCULATOR OPTIONS       !//////////
-add_action('admin_init', function () {
-    register_setting('mg_dynamic_price_calculator_options', 'mg_dynamic_pricing_data');
+	function mg_save_price_calculator_data($post_id, $post) {
+		// Check if it's a product
+		if ('product' !== $post->post_type) {
+			return;
+		}
 	
-	// Register settings for the stamp card mode and enable/disable option
-	register_setting('mg_pricing_settings_group', 'mg_pricing_margin', [ 'default' => MG_PRICING_DEFAULTS['margin'] ]);
+		// Verify nonce if added to form (optional but recommended)
+		if (!isset($_POST['mg_price_calculator_nonce']) || !wp_verify_nonce($_POST['mg_price_calculator_nonce'], 'mg_save_price_calculator_data')) {
+			return;
+		}
+	
+		// Get all pricing data settings
+		$pricing_data = get_option('mg_dynamic_pricing_data'); // Options set in the admin
+	
+		if (!empty($pricing_data)) {
+			foreach ($pricing_data as $section) {
+				// Retrieve the option selected and quantity for each section
+				$option_key = 'mg_price_calculator_' . urlencode($section['title']);
+				$quantity_key = 'mg_quantity_' . urlencode($section['title']);
+	
+				// Check if the option and quantity fields were submitted
+				if (isset($_POST[$option_key]) && isset($_POST[$quantity_key])) {
+					$selected_option = sanitize_text_field($_POST[$option_key]);
+					$quantity = intval($_POST[$quantity_key]);
+	
+					// Save the selected option and quantity as meta fields
+					update_post_meta($post_id, $option_key, $selected_option);
+					update_post_meta($post_id, $quantity_key, $quantity);
+				}
+			}
+		}
+	
+		// Save margin if provided
+		if (isset($_POST['mg_pricing_margin'])) {
+			$margin = floatval($_POST['mg_pricing_margin']);
+			update_post_meta($post_id, 'mg_pricing_margin', $margin);
+		}
+	}
+	add_action('save_post_product', 'mg_save_price_calculator_data', 10, 2);
 
-	// Add a new section to the settings page
-	// This section contains the stamp card mode setting
-	add_settings_section('mg_pricing_settings_section', 'Default pricing configuration', null, 'mg_pricing_settings');
+//////////!       PRICE CALCULATOR OPTIONS       !//////////
+	add_action('admin_init', function () {
+		register_setting('mg_dynamic_price_calculator_options', 'mg_dynamic_pricing_data');
+		register_setting('mg_pricing_settings_group', 'mg_pricing_margin', [ 'default' => MG_PRICING_DEFAULTS['margin'] ]);
 
-	// Add the checkbox field to enable or disable the stamp card system
-	add_settings_field(
-		'mg_pricing_margin_field',	// ID
-		'Target Margin',				// Title
-		'mg_pricing_margin_checkbox',	// Callback
-		'mg_pricing_settings',			// Page
-		'mg_pricing_settings_section',	// Section
-	);
-});
+		add_settings_section('mg_pricing_settings_section', 'Default pricing configuration', null, 'mg_pricing_settings');
 
-function mg_pricing_margin_checkbox() {
-	print('
-		<input type="number" name="mg_pricing_margin" value="' . esc_attr(get_option('mg_pricing_margin')) . '" />
-		<p class="description">
-			Set the margin percentage to add onto the price (Default: '. MG_PRICING_DEFAULTS['margin'] .')
-		</p>
-	');
-}
+		add_settings_field(
+			'mg_pricing_margin_field',		// ID
+			'Target Margin',				// Title
+			'mg_pricing_margin_checkbox',	// Callback
+			'mg_pricing_settings',			// Page
+			'mg_pricing_settings_section',	// Section
+		);
+	});
+
+	function mg_pricing_margin_checkbox() {
+		print('
+			<input type="number" name="mg_pricing_margin" value="' . urlencode(get_option('mg_pricing_margin')) . '" />
+			<p class="description">
+				Set the margin percentage to add onto the price (Default: '. MG_PRICING_DEFAULTS['margin'] .')
+			</p>
+		');
+	}
 
 
 //////////!          TAXONOMIES OPTIONS          !////////// TODO: Custom taxonomies, create up to 100 seperate taxonomies
