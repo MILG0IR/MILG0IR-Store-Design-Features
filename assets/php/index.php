@@ -133,6 +133,7 @@
 				<a href="#configuration"> Configuration </a>
 				<a href="#price-management"> Price Management </a>
 				<a href="#blocks"> Installed Blocks </a>
+				<a href="#management"> Management </a>
 			</nav>
 		</div>
 		<a href="#" class="btn">
@@ -509,6 +510,37 @@
 
 						<?php submit_button()?>
 					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="responsive-wrapper" id="management">
+		<div class="main-header">
+			<span>
+				<h1>MILG0IR Store Designs & Features</h1>
+				<h2>Management</h2>
+			</span>
+			<div class="search">
+				<input type="text" placeholder="Search" />
+				<button type="submit">
+					<i class="dashicons dashicons-search"></i>
+				</button>
+			</div>
+		</div>
+		<div class="horizontal-tabs">
+			<a href="#management/suppliers">Suppliers</a>
+		</div>
+		<div class="content-header" style="display: none;">
+			<div class="content-header-intro">
+				<h2></h2>
+				<p></p>
+			</div>
+			<div class="content-header-actions">
+			</div>
+		</div>
+		<div class="content">
+			<div class="section default" id="suppliers">
+				<div id="container">
 				</div>
 			</div>
 		</div>
