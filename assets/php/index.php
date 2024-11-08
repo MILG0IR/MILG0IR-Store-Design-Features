@@ -11,7 +11,6 @@
 
 		if ($results) {
 			$res .= '<table>';
-			$res .= '<thead><tr><th>Setting</th><th>Value</th></tr></thead>';
 			$res .= '<tbody>';
 
 			foreach ($results as $row) {
@@ -27,15 +26,15 @@
 			$res .= '<p>No settings found for this group.</p>';
 		}
 
+		//$res .= '<a class="button">Edit</a>';
 		$res .= '</div>';
-		
-		
+
 		return $res;
 	}
 	function get_admin_colors() {
 		// Get the current user's admin color scheme
 		$admin_color = get_user_option('admin_color');
-	
+
 		// Define color schemes with actual color values
 		$colors = [
 			'fresh' => [
@@ -102,11 +101,11 @@
 				'text' => '#333333',
 			],
 		];
-	
+
 		// Return the color scheme based on user preference, defaulting to 'fresh'
 		return isset($colors[$admin_color]) ? $colors[$admin_color] : $colors['fresh'];
 	}
-	
+
 	$colors = get_admin_colors();
 	print("
 		<style>
@@ -150,401 +149,11 @@
 			</svg>
 		</div>
 	</div>
-	<div class="responsive-wrapper" id="summary">
-		<div class="main-header">
-			<span>
-				<h1>MILG0IR Store Designs & Features</h1>
-				<h2>Summary</h2>
-			</span>
-			<div class="search">
-				<input type="text" placeholder="Search" />
-				<button type="submit">
-					<i class="dashicons dashicons-search"></i>
-				</button>
-			</div>
-		</div>
-		<div class="horizontal-tabs">
-		</div>
-		<div class="content-header" style="display: none;">
-			<div class="content-header-intro">
-				<h2></h2>
-				<p></p>
-			</div>
-			<div class="content-header-actions">
-			</div>
-		</div>
-		<div class="content">
-			<div class="section default" id="defaults">
-				<div class="mg-settings-container">
-					<style>
-						/* Container Styling for Masonry Layout */
-						.mg-settings-container {
-							display: grid;
-							grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-							gap: 20px;
-							max-width: 1200px;
-							margin: 0 auto;
-							padding: 20px;
-						}
-
-						/* Individual Settings Card */
-						.mg-settings-summary {
-							background: #fff;
-							border: 1px solid #ddd;
-							border-radius: 8px;
-							box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-							padding: 20px;
-							transition: transform 0.2s;
-						}
-
-						.mg-settings-summary:hover {
-							transform: translateY(-5px);
-						}
-
-						/* Title Styles */
-						.mg-settings-summary h2 {
-							font-size: 1.6em;
-							color: var(--admin-colour-tertiary);
-							margin-bottom: 15px;
-							border-bottom: 2px solid var(--admin-colour-tertiary);
-							padding-bottom: 5px;
-						}
-
-						.mg-settings-summary h4 {
-							font-size: 1.2em;
-							color: #333;
-							margin: 15px 0 10px;
-							border-left: 4px solid var(--admin-colour-tertiary);
-							padding-left: 10px;
-						}
-
-						/* Table Styles */
-						.mg-settings-summary table {
-							width: 100%;
-							border-collapse: collapse;
-							margin-top: 10px;
-						}
-
-						.mg-settings-summary th,
-						.mg-settings-summary td {
-							padding: 10px 12px;
-							text-align: left;
-						}
-
-						.mg-settings-summary thead th {
-							background-color: var(--admin-colour-tertiary);
-							color: #fff;
-							font-weight: bold;
-						}
-
-						.mg-settings-summary tbody tr:nth-child(even) {
-							background-color: #f9f9f9;
-						}
-
-						.mg-settings-summary tbody tr:nth-child(odd) {
-							background-color: #ffffff;
-						}
-
-						/* Responsive Adjustments */
-						@media (max-width: 768px) {
-							.mg-settings-container {
-								grid-template-columns: 1fr;
-							}
-						}
-					</style>
-					<?php
-						print(display_settings_summary("mg_stamp_card_", "Stamp Card"));
-						print(display_settings_summary("mg_wishlist_", "Wishlist"));
-						print(display_settings_summary("mg_taxonomies_", "Taxonomies"));
-
-						// Retrieve all stored settings for 'mg_pricing_settings'
-						$pricing_settings = get_option('mg_dynamic_pricing_data');
-
-						// Check if there are settings to display
-						if ($pricing_settings && is_array($pricing_settings)) {
-							echo '<div class="mg-settings-summary">';
-							echo '<h2>Pricing Settings Summary</h2>';
-
-							// Loop through each section and display its options
-							foreach ($pricing_settings as $section) {
-								if (!empty($section['title'])) {
-									echo '<h4>' . esc_html($section['title']) . ': </h3>';
-								}
-
-								print('<table>');
-								print('<thead><tr><th>Setting</th><th>Value</th></tr></thead>');
-								print('<tbody>');
-								// Display each option and its value within the section
-								if (!empty($section['options']) && is_array($section['options'])) {
-									foreach ($section['options'] as $option) {
-										if (!empty($option['name']) && isset($option['value'])) {
-											print('<tr>');
-											print('<td><strong>' . esc_html($option['name']) . '</strong></td>');
-											print('<td>' . esc_html($option['value']) . '</td>');
-											print('</tr>');
-										}
-									}
-								}
-								print('</tbody>');
-								print('</table>');
-							}
-							print('</div>');
-							
-						} else {
-							echo '<p>No pricing settings have been configured yet.</p>';
-						}
-					?>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="responsive-wrapper" id="configuration">
-		<div class="main-header">
-			<span>
-				<h1>MILG0IR Store Designs & Features</h1>
-				<h2>Configuration</h2>
-			</span>
-			<div class="search">
-				<input type="text" placeholder="Search" />
-				<button type="submit">
-					<i class="dashicons dashicons-search"></i>
-				</button>
-			</div>
-		</div>
-		<div class="horizontal-tabs">
-			<a href="#configuration/stampcard">Stamp Card</a>
-			<a href="#configuration/wishlist">Wishlist</a>
-			<a href="#configuration/taxonomies">Taxonomies</a>
-		</div>
-		<div class="content-header" style="display: none;">
-			<div class="content-header-intro">
-				<h2></h2>
-				<p></p>
-			</div>
-			<div class="content-header-actions">
-			</div>
-		</div>
-		<div class="content">
-			<div class="section default" id="stampcard">
-				<form method="post" action="options.php">
-					<?php
-					settings_fields('mg_stamp_card_settings_group');	// Register settings group
-					do_settings_sections('mg_stamp_card_settings');		// Display settings sections
-					submit_button();									// Display the save button
-					?>
-				</form>
-			</div>
-			<div class="section" id="wishlist">
-				<form method="post" action="options.php">
-					<?php
-					settings_fields('mg_wishlist_settings_group');	// Register settings group
-					do_settings_sections('mg_wishlist_settings');	// Display settings sections
-					submit_button();								// Display the save button
-					?>
-				</form>
-			</div>
-			<div class="section" id="taxonomies">
-				<form method="post" action="options.php">
-					<?php
-					settings_fields('mg_taxonomies_settings_group');	// Register settings group
-					do_settings_sections('mg_taxonomies_settings');	// Display settings sections
-					submit_button();								// Display the save button
-					?>
-				</form>
-			</div>
-		</div>
-	</div>
-	<div class="responsive-wrapper" id="blocks">
-		<div class="main-header">
-			<span>
-				<h1>MILG0IR Store Designs & Features</h1>
-				<h2>Provided Blocks</h2>
-			</span>
-			<div class="search">
-				<input type="text" placeholder="Search" />
-				<button type="submit">
-					<i class="dashicons dashicons-search"></i>
-				</button>
-			</div>
-		</div>
-		<div class="horizontal-tabs">
-			<a href="#blocks/installed">Installed</a>
-		</div>
-		<div class="content-header" style="display: none;">
-			<div class="content-header-intro">
-				<h2></h2>
-				<p></p>
-			</div>
-			<div class="content-header-actions">
-			</div>
-		</div>
-		<div class="content">
-			<div class="section default" id="installed">
-				<div id="container">
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="responsive-wrapper" id="price-management">
-		<div class="main-header">
-			<span>
-				<h1>MILG0IR Store Designs & Features</h1>
-				<h2>Price Management</h2>
-			</span>
-			<div class="search">
-				<input type="text" placeholder="Search" />
-				<button type="submit">
-					<i class="dashicons dashicons-search"></i>
-				</button>
-			</div>
-		</div>
-		<div class="horizontal-tabs">
-			<a href="#price-management/defaults">Defaults</a>
-			<a href="#price-management/calculator">Calculator</a>
-		</div>
-		<div class="content-header" style="display: none;">
-			<div class="content-header-intro">
-				<h2></h2>
-				<p></p>
-			</div>
-			<div class="content-header-actions">
-			</div>
-		</div>
-		<div class="content">
-			<style>
-				/* Set the accordion container to flex */
-				#mg-accordion {
-					margin-top: .8rem;
-					display: flex;
-					flex-wrap: wrap;
-					gap: .8rem; /* Adds spacing between the sections */
-				}
-
-				/* Each accordion section will have a max-width of 50% */
-				#mg-accordion .mg-accordion-section {
-					flex: 1 1 45%; /* Allows two sections per row with some spacing */
-					max-width: 50%;
-					box-sizing: border-box; /* Ensures padding doesn't increase width */
-					padding: .1rem;
-					background: #f7f7f7;
-					border: 0.1rem solid #ccc;
-					border-radius: 1rem;
-				}
-
-				/* Optional: Style the section title */
-				#mg-accordion .mg-accordion-section h3 {
-					font-size: 1.2rem;
-					margin-bottom: 0.5rem;
-				}
-
-				.mg-options-list {
-					margin-top: 1rem;
-				}
-				#mg-accordion .mg-accordion-section {
-					padding: 1.5rem;
-					border: 0.1rem solid #ccc;
-					background: #f9f9f9;
-				}
-				.mg-options-list .mg-option,
-				.mg-options-list .mg-option-header {
-					display: flex;
-					align-items: center;
-					gap: .5rem;
-					margin-bottom: 0.5rem;
-				}
-				.mg-options-list .mg-option input {
-					width: 40%;
-				}
-				.mg-options-list .mg-option-header h4 {
-					width: 40%;
-					padding-left: .8rem;
-					margin: unset;
-				}
-				.mg-accordion-section .mg-remove-section {
-					margin-left: .8rem;
-				}
-			</style>
-
-			<div class="section default" id="defaults">
-				<form method="post" action="options.php">
-					<?php
-						settings_fields('mg_pricing_settings_group');	// Register settings group
-						do_settings_sections('mg_pricing_settings');	// Display settings sections
-						submit_button();								// Display the save button
-					?>
-				</form>
-			</div>
-			<div class="section" id="calculator">
-				<div class="wrap">
-					<form method="post" action="options.php">
-					<h2>Custom Price Calculator Options</h2>
-						<?php
-							settings_fields('mg_dynamic_price_calculator_options');
-							$pricing_data = get_option('mg_dynamic_pricing_data', []);
-							?>
-							<button type="button" class="mg-add-section button">Add Section</button>
-				
-							<div id="mg-accordion">
-								<?php if (!empty($pricing_data)) { ?>
-									<?php foreach ($pricing_data as $section_index => $section) { ?>
-										<div class="mg-accordion-section" data-index="<?=$section_index?>">
-											<strong><input type="text" name="mg_dynamic_pricing_data[<?=$section_index?>][title]" value="<?=esc_attr($section['title'])?>" placeholder="Title"><button type="button" class="button mg-remove-section">Remove Section</button></strong>
-											<div class="mg-options-list">
-												<div class="mg-option-header">
-													<h4>Name</h4>
-													<h4>Value</h4>
-												</div>
-												<?php foreach ($section['options'] as $option_index => $option) { ?>
-													<div class="mg-option">
-														<input type="text" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][name]" value="<?=esc_attr($option['name'])?>" placeholder="Option Name">
-														<input type="number" step="0.00001" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][value]" value="<?=esc_attr($option['value'])?>" placeholder="Option Value">
-														<button type="button" class="button mg-remove-option">Remove</button>
-													</div>
-												<?php }?>
-											</div>
-											<button type="button" class="button mg-add-option" data-section-index="<?=$section_index?>">Add Option</button>
-										</div>
-							<?php }
-								} ?>
-						</div>
-
-						<?php submit_button()?>
-					</form>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="responsive-wrapper" id="management">
-		<div class="main-header">
-			<span>
-				<h1>MILG0IR Store Designs & Features</h1>
-				<h2>Management</h2>
-			</span>
-			<div class="search">
-				<input type="text" placeholder="Search" />
-				<button type="submit">
-					<i class="dashicons dashicons-search"></i>
-				</button>
-			</div>
-		</div>
-		<div class="horizontal-tabs">
-			<a href="#management/suppliers">Suppliers</a>
-		</div>
-		<div class="content-header" style="display: none;">
-			<div class="content-header-intro">
-				<h2></h2>
-				<p></p>
-			</div>
-			<div class="content-header-actions">
-			</div>
-		</div>
-		<div class="content">
-			<div class="section default" id="suppliers">
-				<div id="container">
-				</div>
-			</div>
-		</div>
-	</div>
+	<?php
+		foreach (glob(plugin_dir_path(__FILE__) . "pages/*.php") as $filename) {
+			include $filename;
+		}
+	?>
 
 	<div class="responsive-wrapper">
 		<div class="main-header">

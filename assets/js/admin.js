@@ -138,5 +138,22 @@ jQuery(document).ready(function($) {
 		let retailValue = (total / (100 - margin)) * 100;
         $('#mg_price_calculator #mg_suggested_price').text(retailValue.toFixed(2));
     }
+	$('#calculator-form').on('submit', function(e) {
+		e.preventDefault();
+		
+		const calculationData = jQuery('#calculation-result').val(); // Assuming this holds your result
+	
+		jQuery.ajax({
+			url: my_ajax_object.ajax_url,
+			method: 'POST',
+			data: {
+				action: 'save_calculator_result',
+				calculation_data: calculationData,
+			},
+			success: function(response) {
+				alert(response.data.message);
+			}
+		});
+	});
 	
 });

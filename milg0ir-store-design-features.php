@@ -789,7 +789,7 @@
 			foreach ($pricing_data as $index => $section) {
 				print('
 				<div class="mg-price-calculator-section">
-					<label for="mg_price_calculator_' . urlencode($section['title']) . '"><h4>' . esc_html($section['title']) . ':</h4></label>
+					<label for="mg_price_calculator_' . urlencode($section['title']) . '"><h4>' . esc_html($section['title']) . ': <span class="dashicons dashicons-info-outline" style="color: grey;"></span></h4></label>
 					<div class="mg-price-calculator-input">
 						<select id="mg_price_calculator_' . urlencode($section['title']) . '" name="mg_price_calculator_' . urlencode($section['title']) . '">
 							<option value="0">Select</option>');
@@ -854,6 +854,7 @@
 //////////!       PRICE CALCULATOR OPTIONS       !//////////
 	add_action('admin_init', function () {
 		register_setting('mg_dynamic_price_calculator_options', 'mg_dynamic_pricing_data');
+		register_setting('mg_suppliers_options', 'mg_suppliers_data');
 		register_setting('mg_pricing_settings_group', 'mg_pricing_margin', [ 'default' => MG_PRICING_DEFAULTS['margin'] ]);
 
 		add_settings_section('mg_pricing_settings_section', 'Default pricing configuration', null, 'mg_pricing_settings');
