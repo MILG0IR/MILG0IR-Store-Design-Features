@@ -1,4 +1,3 @@
-
 <div class="responsive-wrapper" id="blocks">
 	<div class="main-header">
 		<span>

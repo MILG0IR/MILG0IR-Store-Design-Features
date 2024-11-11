@@ -1,4 +1,3 @@
-
 <div class="responsive-wrapper" id="management">
 	<div class="main-header">
 		<span>
