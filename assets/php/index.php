@@ -135,10 +135,10 @@
 				<a href="#management"> Management </a>
 			</nav>
 		</div>
-		<a href="#" class="btn">
+		<button href="#" class="header-nav-btn btn">
 			<i class="dashicons dashicons-menu"></i>
 			<span>Menu</span>
-		</a>
+		</button>
 	</div>
 </header>
 <main class="main milg0ir">

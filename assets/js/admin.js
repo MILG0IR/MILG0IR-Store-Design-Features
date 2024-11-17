@@ -1,4 +1,4 @@
-jQuery(document).ready(function($) {
+jQuery(document).ready(function ($) {
 	/**
 	 * Localization
 	 */
@@ -6,7 +6,7 @@ jQuery(document).ready(function($) {
 	if (typeof mg_localization === 'undefined') {
 		console.log("Script localization failled.");
 	}
-	/*
+	/**
 	 * Defines constants
 	 */
 	const sections = $('.milg0ir > .responsive-wrapper');
@@ -23,30 +23,45 @@ jQuery(document).ready(function($) {
 	let sectionCounter = 0; // Initialize a counter to track the sections
 
 	// Show the correct section when the page loads
-	if($('main.milg0ir').length > 0) {
+	if ($('main.milg0ir').length > 0) {
 		showSection();
 		toggleFields();
 
 		autoPopulateSections();
 	}
-	if($('#mg_price_calculator').length > 0) {
+	if ($('#mg_price_calculator').length > 0) {
 		calculateSuggestedPrice();
 	}
 
-	/*
+	/**
 	 * Hooks
 	 */
 	$(window).on('hashchange', showSection);
 	modeDropdown.on('change', toggleFields);
 	$('.mg-price-calculator-section select, .mg-price-calculator-section input[type="number"]').on('change', calculateSuggestedPrice);
 
-	$('.mg-add-section').on('click', ()=>{addNewOption(addNewSection())});
+	$('.mg-add-section').on('click', () => { addNewOption(addNewSection()) });
+	$('.header-nav-btn').on('click', () => { $('.header-navigation').toggleClass('open') });
+	$('.header-navigation-links a').on('click', () => { $('.header-navigation').removeClass('open') });
 	$('.option-buyingPrice, .option-retailUnit, .option-buyingUnit').on('input', calculateRetailPrice);
 
+	/**
+	 * Observers
+	 */
 
-	/*
+	// Create a ResizeObserver
+	const resizeObserver = new ResizeObserver((entries) => {
+		entries.forEach((entry) => {
+			const $section = $(entry.target); // Convert to jQuery object
+			updateSectionRows($section);
+		});
+	});
+	/**
 	 * Functions
 	 */
+	function toggleNav() {
+		;
+	}
 	function showSection() {
 		sections.removeClass('active').find('.section').removeClass('active');
 		links.removeClass('active');
@@ -76,7 +91,7 @@ jQuery(document).ready(function($) {
 					}
 				}
 			}
-			links.each(function() {
+			links.each(function () {
 				if ($(this).attr('href').substring(1) === hash || $(this).attr('href').substring(1) === hashParts[0]) {
 					$(this).addClass('active');
 				}
@@ -91,19 +106,17 @@ jQuery(document).ready(function($) {
 		priceBasedFields.closest('tr').toggle(selectedMode === 'price_based');
 		hybridFields.closest('tr').toggle(selectedMode === 'hybrid');
 	}
-
 	/* Price Suggestion Calculator - Admin page */
-	/* NEW */
 	function addNewSection() {
 		const newSection = $('<div>', { class: 'mg-calculator-section', 'data-index': sectionCounter }).append(
 			$('<h3>', {
 				class: 'section-title',
-				text: 'Section '+sectionCounter,
+				text: 'Section ' + sectionCounter,
 			}),
 			$('<content>', { class: 'section-content' }).append(
 
-				$('<label>', { class: 'input', for: 'section_'+sectionCounter+'_title' }).append(
-					$('<input>', { class: 'section-title-edit', type: 'text', placeholder: 'Section '+sectionCounter, value: 'Section '+sectionCounter, name: 'product_calculator_data['+sectionCounter+'][name]' }),
+				$('<label>', { class: 'input', for: 'section_' + sectionCounter + '_title' }).append(
+					$('<input>', { class: 'section-title-edit', type: 'text', placeholder: 'Section ' + sectionCounter, value: 'Section ' + sectionCounter, name: 'product_calculator_data[' + sectionCounter + '][name]' }),
 					$('<span>', { class: 'label', text: 'Name' }),
 					$('<span>', { class: 'focus-bg' })
 				),
@@ -113,13 +126,13 @@ jQuery(document).ready(function($) {
 				$('<div>', { class: 'options-container' })
 			)
 		)
-	
+
 		// Attach listeners specifically to the newly added section
 		newSection.find('.remove-section').on('click', removeSection);
 		newSection.find('.add-option').on('click', (addNewOption));
 		newSection.find('.section-title').on('click', toggleSection);
 
-		newSection.find('.section-title-edit').on('input', function() {
+		newSection.find('.section-title-edit').on('input', function () {
 			const newTitle = $(this).val(); // Get the new title from the input field
 			newSection.find('.section-title').text(newTitle); // Update the title
 		});
@@ -146,30 +159,30 @@ jQuery(document).ready(function($) {
 		} else {
 			parent = $(parentElement.target); // Explicit parent element provided
 		}
-		
+
 		let sectionIndex = parent.closest('.mg-calculator-section').data('index')
 		let optionIndex = parent.siblings('.options-container').children().length;
-		let name = 'product_calculator_data['+sectionIndex+'][options]['+optionIndex+']';
+		let name = 'product_calculator_data[' + sectionIndex + '][options][' + optionIndex + ']';
 
 		// Create the new option element
 		let newOption = $('<div>', { class: 'option' }).append(
-			$('<input>', { type: 'checkbox', class: 'option-toggle', id: name+'[open]', name: name+'[open]', hidden: true }),
-			$('<label>', { text: 'Option '+optionIndex, class: 'option-header', for: name+'[open]' }),
+			$('<input>', { type: 'checkbox', class: 'option-toggle', id: name + '[open]', name: name + '[open]', hidden: true }),
+			$('<label>', { text: 'Option ' + optionIndex, class: 'option-header', for: name + '[open]' }),
 			$('<article>', { class: 'option-content' }).append(
-				$('<input>', { class: 'option-key', name: name+'[key]', id: name+'[key]', type: 'text', value: optionIndex, hidden: true }),
+				$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'text', value: optionIndex, hidden: true }),
 
-				$('<label>', { class: 'input', for: name+'[name]' }).append(
-					$('<input>', { class: 'option-name', name: name+'[name]', id: name+'[name]', type: 'text', placeholder: '', value: 'Option '+optionIndex }),
+				$('<label>', { class: 'input', for: name + '[name]' }).append(
+					$('<input>', { class: 'option-name', name: name + '[name]', id: name + '[name]', type: 'text', placeholder: '', value: 'Option ' + optionIndex }),
 					$('<span>', { class: 'label', text: 'Name' }),
 					$('<span>', { class: 'focus-bg' })
 				),
 
-				$('<label>', { class: 'input', for: name+'[supplier]' }).append(
-					$('<select>', { class: 'option-supplier', name: name+'[supplier]', id: name+'[supplier]', type: 'text', required: true }).append(
+				$('<label>', { class: 'input', for: name + '[supplier]' }).append(
+					$('<select>', { class: 'option-supplier', name: name + '[supplier]', id: name + '[supplier]', type: 'text', required: true }).append(
 						// Add a placeholder option
 						$('<option>', { value: '', text: '', selected: true, disabled: true }),
 						// Append options dynamically from mg_localization.suppliers
-						mg_localization.suppliers.map(supplier => 
+						mg_localization.suppliers.map(supplier =>
 							$('<option>', { value: supplier.id, text: supplier.name || 'Unknown' })
 						)
 					),
@@ -185,7 +198,7 @@ jQuery(document).ready(function($) {
 						Object.entries(mg_localization.units).map(([category, unitList]) =>
 							$('<optgroup>', { label: category }).append(
 								unitList.map(unit =>
-									$('<option>', { value: unit[0]+unit[1], 'data-key': unit[0], text: unit[0] })
+									$('<option>', { value: unit[0] + unit[1], 'data-key': unit[0], text: unit[0] })
 								)
 							)
 						)
@@ -193,16 +206,16 @@ jQuery(document).ready(function($) {
 					$('<span>', { class: 'label', text: 'Buying Unit' }),
 					$('<span>', { class: 'focus-bg' })
 				),
-				
-				$('<label>', { class: 'input', for: name+'[retailUnit]' }).append(
-					$('<select>', { class: 'option-retailUnit', name: name+'[retailUnit]', type: 'text', required: true }).append(
+
+				$('<label>', { class: 'input', for: name + '[retailUnit]' }).append(
+					$('<select>', { class: 'option-retailUnit', name: name + '[retailUnit]', type: 'text', required: true }).append(
 						// Add a placeholder option
 						$('<option>', { value: '', text: '', selected: true, disabled: true }),
 						// Append options dynamically from mg_localization.unit
 						Object.entries(mg_localization.units).map(([category, unitList]) =>
 							$('<optgroup>', { label: category }).append(
 								unitList.map(unit =>
-									$('<option>', { value: unit[0]+unit[1], 'data-key': unit[0], text: unit[0] })
+									$('<option>', { value: unit[0] + unit[1], 'data-key': unit[0], text: unit[0] })
 								)
 							)
 						)
@@ -211,15 +224,15 @@ jQuery(document).ready(function($) {
 					$('<span>', { class: 'focus-bg' })
 				),
 
-				$('<label>', { class: 'input', for: name+'[buyingPrice]' }).append(
-					$('<input>', { class: 'option-buyingPrice', name: name+'[buyingPrice]', type: 'text', placeholder: ' ' }),
+				$('<label>', { class: 'input', for: name + '[buyingPrice]' }).append(
+					$('<input>', { class: 'option-buyingPrice', name: name + '[buyingPrice]', type: 'text', placeholder: ' ' }),
 					$('<span>', { class: 'label', text: 'Buying Price' }),
 					$('<span>', { class: 'focus-bg' })
 				),
 
-				$('<label>', { class: 'input', for: name+'[retailPrice]' }).append(
-					$('<input>', { class: 'option-retailPrice', name: name+'[retailPrice]', type: 'text', placeholder: ' ', disabled: true }),
-					$('<input>', { class: 'option-retailPrice', name: name+'[retailPrice]', type: 'text', placeholder: ' ', hidden: true }),
+				$('<label>', { class: 'input', for: name + '[retailPrice]' }).append(
+					$('<input>', { class: 'option-retailPrice', name: name + '[retailPrice]', type: 'text', placeholder: ' ', disabled: true }),
+					$('<input>', { class: 'option-retailPrice', name: name + '[retailPrice]', type: 'text', placeholder: ' ', hidden: true }),
 					$('<span>', { class: 'label', text: 'Retail Price' }),
 					$('<span>', { class: 'focus-bg' })
 				),
@@ -246,11 +259,11 @@ jQuery(document).ready(function($) {
 
 		// Get the JSON data from the hidden input field
 		let sectionsJSON = $('.currentData').val();
-		
+
 		// Parse the JSON data into an object
 		let sectionsData = JSON.parse(sectionsJSON);
-	
-	
+
+
 		// Loop through each section in the JSON data
 		sectionsData.forEach((section, sectionIndex) => {
 			let newSection = addNewSection();
@@ -261,20 +274,31 @@ jQuery(document).ready(function($) {
 				let newOption = addNewOption(newSection);
 				$(newOption).find('.option-header').text(option.name);
 				Object.keys(option).forEach((key) => {
-					$(newOption).find('.option-'+key).val(option[key]); // Now assign the class and value to the input elements
+					$(newOption).find('.option-' + key).val(option[key]); // Now assign the class and value to the input elements
 				});
 			});
 		});
 	}
-	function makeUrlFriendly(inputString) {
-		return inputString
-			.toLowerCase() // Convert to lowercase
-			.replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-			.trim() // Trim leading and trailing whitespace
-			.replace(/\s+/g, '-') // Replace spaces with dashes
-			.replace(/-+/g, '-'); // Ensure no multiple dashes
-	}
-	function calculateRetailPrice()  {
+	/* Auto resizing sections */
+	function updateSectionRows($section) {
+		if ($section.hasClass("expanded")) {
+			// Get the section height in pixels
+			const sectionHeightPx = $section.outerHeight();
+			// Convert rem to pixels for calculation
+			const remToPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
+			// Calculate the number of rows (round up to ensure it fits)
+			const rows = Math.ceil(sectionHeightPx / (5 * remToPx));
+
+			// Set the grid-row CSS property
+			$section.css("grid-row", `span ${rows}`);
+		} else {
+			// If not expanded, default to 1 row
+			$section.css("grid-row", "span 1");
+		}
+	};
+	const pxToRem = (px) => px / parseFloat($("html").css("font-size")); // Helper to convert px to rem
+	/* Calculate the material retail price */
+	function calculateRetailPrice() {
 		// Find the closest form section (container) to ensure calculations are material-specific
 		let $section = $(this).closest('article'); // assuming <article> wraps each material's form
 
@@ -303,15 +327,14 @@ jQuery(document).ready(function($) {
 			return 1; // If no match, default to 1 (assuming no conversion needed)
 		}
 	}
-
 	/* Price Suggestion Calculator - Product page */
 	function calculateSuggestedPrice() {
 		let total = 0;
 		let margin = $('.mg_pricing_margin').val();
 
-		$('.mg-price-calculator-section').each(function() {
-			if($(this).find('select').length > 0) {
-				let key = $(this).find('select option:selected').data('key')+'';
+		$('.mg-price-calculator-section').each(function () {
+			if ($(this).find('select').length > 0) {
+				let key = $(this).find('select option:selected').data('key') + '';
 				let fullValue = $(this).find('select').val() || 0;
 				let selectedValue = fullValue.slice(key.length);
 				let quantity = parseFloat($(this).find('input[type="number"]').val()) || 0;
@@ -323,4 +346,11 @@ jQuery(document).ready(function($) {
 		$('#mg_price_calculator #mg_suggested_price').text(retailPrice.toFixed(2));
 	}
 	/* Modals with responses */
+
+
+
+	$(".mg-calculator-section").each(function () {
+		updateSectionRows($(this)); // Initial calculation
+		resizeObserver.observe(this); // Observe changes
+	});
 });
