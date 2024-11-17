@@ -38,6 +38,36 @@
 	define("MG_PRICING_DEFAULTS", [
 		'margin' => 20
 	]);
+	define('UNIT_OPTIONS', [
+		'generic' => [
+			['Each', 1],
+			['Pair', 2],
+			['Dozen', 12]
+		],
+		'weight' => [
+			['kg', 1000],
+			['gr', 1],
+			['mg', 0.1],
+		],
+		'length' => [
+			['m', 1000],
+			['cm', 1],
+			['mm', 0.1],
+		],
+		'volume' => [
+			['l', 1000],
+			['cl', 1],
+			['ml', 0.1],
+		],
+		'energy' => [
+			['KiloWatt 28d', 40320],
+			['KiloWatt 7d', 10080],
+			['KiloWatt 24h', 1440],
+			['KiloWatt 12h', 720],
+			['KiloWatt Hour', 60],
+			['KiloWatt Minute', 1],
+		]
+	]);
 //////////!         STYLES AND SCRIPTS           !//////////
 	add_action('wp_enqueue_scripts', function () {
 		wp_enqueue_style('milg0ir-store-style', plugin_dir_url(__FILE__) . 'assets/css/main.css', array(), '1.0.0');
@@ -63,13 +93,17 @@
 		wp_enqueue_style('milg0ir-store-icons', plugin_dir_url(__FILE__) . 'assets/css/icons.css', array(), '1.0.0');
 
 		wp_enqueue_script('milg0ir-store-admin-script', plugin_dir_url(__FILE__) . 'assets/js/admin.js', array('jquery'), '1.0.0', true);
+		wp_localize_script('milg0ir-store-admin-script', 'mg_localization', [
+			'suppliers' => get_option('mg_suppliers_data', []),
+			'units' => UNIT_OPTIONS
+		]);
 	});
 
 //////////!          ADMIN TAB / PAGE            !//////////
 	add_action('admin_menu', function () {
 		add_menu_page(
-			__('MILG0IR ', MG_TEXT_DOMAIN),	// Page title
-			__('Milg0ir', MG_TEXT_DOMAIN),	// Menu title (what appears in the sidebar)
+			__('MILG0IR ', MG_TEXT_DOMAIN),		// Page title
+			__('Milg0ir', MG_TEXT_DOMAIN),		// Menu title (what appears in the sidebar)
 			'manage_options',					// Capability required to access
 			'mg',								// Menu slug (used in the URL)
 			'page_index',						// Function to display the page content
@@ -764,7 +798,7 @@
 
 	function mg_price_calculator($post) {
 		$post_id = $post->ID;
-		$pricing_data = get_option('mg_dynamic_pricing_data'); // Retrieve all options saved in admin settings
+		$pricing_data = get_option('product_calculator_data'); // Retrieve all options saved in admin settings
 		print('
 			<style>
 				.mg-price-calculator-section label h4 {
@@ -789,24 +823,39 @@
 			foreach ($pricing_data as $index => $section) {
 				print('
 				<div class="mg-price-calculator-section">
-					<label for="mg_price_calculator_' . urlencode($section['title']) . '"><h4>' . esc_html($section['title']) . ': <span class="dashicons dashicons-info-outline" style="color: grey;"></span></h4></label>
-					<div class="mg-price-calculator-input">
-						<select id="mg_price_calculator_' . urlencode($section['title']) . '" name="mg_price_calculator_' . urlencode($section['title']) . '">
-							<option value="0">Select</option>');
-
-				foreach ($section['options'] as $option) {
-					$selected = urlencode(get_post_meta($post_id, 'mg_price_calculator_'.urlencode($section['title']), true)) == urlencode($option['value'])? 'selected': '';
-					print('<option value="' . urlencode($option['value']) . '" '.$selected.'>' . esc_html($option['name']) . '</option>');
+					<label for="mg_price_calculator_' . urlencode($section['name']) . '"><h4>' . esc_html($section['name']) . ': <span class="dashicons dashicons-info-outline" style="color: grey;"></span>');
+				if($section['multiple']) {
+					print('<span style="float: right;" class="dashicons dashicons-plus-alt" style="color: grey;"></span>');
 				}
+				print('
+					</h4></label>
+					<div class="mg-price-calculator-input">
+						<select id="mg_price_calculator_' . urlencode($section['name']) . '" name="mg_price_calculator_' . urlencode($section['name']) . '">
+							<option>Select</option>');
 
-				print('</select><input type="number" id="mg_quantity_' . urlencode($section['title']) . '" name="mg_quantity_' . urlencode($section['title']) . '" placeholder="Enter quantity" min="0" step="0.01" value="'.get_post_meta($post_id, 'mg_quantity_'.urlencode($section['title']), true).'" ></div></div>');
+							foreach ($section['options'] as $option) {
+								// Get the saved value from post meta, with the format 'key.value'
+								$saved_value = get_post_meta($post_id, 'mg_price_calculator_' . urlencode($section['name']), true);
+
+								// Generate the current option value in the same 'key.value' format
+								$option_value = $option['key'] . $option['retailPrice'];
+
+								// Compare and mark as selected if it matches the saved value
+								$selected = ($saved_value == $option_value) ? 'selected' : '';
+
+								// Output the option with the key, value, and selected status
+								print('<option value="' . urlencode($option_value) . '" data-key="' . urlencode($option['key']) . '" ' . $selected . '>' . esc_html($option['name']) . '</option>');
+							}
+				$quantity = get_post_meta($post_id, 'mg_quantity_'.urlencode($section['name']), true);
+				$quantity = !empty($quantity) ? $quantity : esc_html($option['default']);
+				print('</select><input type="number" id="mg_quantity_' . urlencode($section['name']) . '" name="mg_quantity_' . urlencode($section['name']) . '" placeholder="Enter quantity" min="0" step="0.01" value="'.$quantity.'" ></div></div>');
 			}
 		} else {
 			print('<p>No options configured in the settings.</p>');
 		}
 
-		print('<div class="mg-price-calculator-section"><h4>Margin %: </h4><input type="number" class="mg_pricing_margin" name="mg_pricing_margin" placeholder="Enter margin" min="0" step=".1" value="'.get_option('mg_pricing_margin').'"></div>');
-		print('<p><strong>Suggested Price: </strong><h1 id="mg_suggested_price">0.00</h1></p>');
+		print('<div class="mg-price-calculator-section"><h4>Margin %: </h4><input type="number" class="mg_pricing_margin" name="mg_pricing_margin" placeholder="Enter margin" min="0" step=".01" value="'.get_option('mg_pricing_margin').'"></div>');
+		print('<p><strong>Suggested Price: </strong>'.$currency_symbol.'<h1 id="mg_suggested_price">0.00</h1></p>');
 
 		wp_nonce_field('mg_save_price_calculator_data', 'mg_price_calculator_nonce');
 	}
@@ -823,13 +872,13 @@
 		}
 	
 		// Get all pricing data settings
-		$pricing_data = get_option('mg_dynamic_pricing_data'); // Options set in the admin
+		$pricing_data = get_option('product_calculator_data'); // Options set in the admin
 	
 		if (!empty($pricing_data)) {
 			foreach ($pricing_data as $section) {
 				// Retrieve the option selected and quantity for each section
-				$option_key = 'mg_price_calculator_' . urlencode($section['title']);
-				$quantity_key = 'mg_quantity_' . urlencode($section['title']);
+				$option_key = 'mg_price_calculator_' . urlencode($section['name']);
+				$quantity_key = 'mg_quantity_' . urlencode($section['name']);
 	
 				// Check if the option and quantity fields were submitted
 				if (isset($_POST[$option_key]) && isset($_POST[$quantity_key])) {
@@ -853,8 +902,10 @@
 
 //////////!       PRICE CALCULATOR OPTIONS       !//////////
 	add_action('admin_init', function () {
-		register_setting('mg_dynamic_price_calculator_options', 'mg_dynamic_pricing_data');
+		register_setting('mg_product_calculator_group', 'product_calculator_data');
+
 		register_setting('mg_suppliers_options', 'mg_suppliers_data');
+
 		register_setting('mg_pricing_settings_group', 'mg_pricing_margin', [ 'default' => MG_PRICING_DEFAULTS['margin'] ]);
 
 		add_settings_section('mg_pricing_settings_section', 'Default pricing configuration', null, 'mg_pricing_settings');

@@ -1,44 +1,71 @@
 <?php
-	function showUnits($input, $current) {
-		// Define all units by type and category
-		$all_units = [
-			'weight' => [
-				'Metric' => ['kg', 'g'],
-				'Imperial' => ['lb', 'oz']
-			],
-			'length' => [
-				'Metric' => ['m', 'cm', 'mm'],
-				'Imperial' => ['ft', 'in']
-			],
-			'volume' => [
-				'Metric' => ['l', 'ml'],
-				'Imperial' => ['gal', 'qt']
-			],
-			'temperature' => [
-				'Standard' => ['°C', '°F', 'K']
-			],
-			'currency' => [
-				'Standard' => ['$', '€', '£']
-			],
-			'generic' => [
-				'Standard' => ['Each', 'pair', 'dozen', 'box']
-			]
-		];
+function showSuppliers() {
+	$res = '';
+	// Retrieve all stored suppliers data
+	$suppliers_data = get_option('mg_suppliers_data');
+	// Supplier Dropdown
+	if ($suppliers_data && is_array($suppliers_data)) {
+		$res .= '<option value="">Select a Supplier</option>'; // Default empty option
 
-		// Split the input string into unit types
-		$unit_types = array_map('trim', explode(',', $input));
-		$res = '';
-		$valid_unit_types = [];
+		foreach ($suppliers_data as $index => $supplier) {
+			$selected = esc_attr($option['supplier']) == $supplier['name'] ? 'selected' : '';
+			if (!empty($supplier['name'])) {
+				$res .= '<option value="' . esc_html($supplier['name']) . '" ' . $selected . '>' . esc_html($supplier['name']) . '</option>';
+			}
+		}
+	} else {
+		$res =  '<p>No suppliers available.</p>';
+	}
+	return $res;
+}
+function showUnits($input, $current) {
+	// Define all units by type and category
+	$all_units = [
+		'generic' => [
+			['Each', 1],
+			['Pair', 2],
+			['Dozen', 12]
+		],
+		'weight' => [
+			['kg', 1000],
+			['gr', 1],
+			['mg', 0.1],
+		],
+		'length' => [
+			['m', 1000],
+			['cm', 1],
+			['mm', 0.1],
+		],
+		'volume' => [
+			['l', 1000],
+			['cl', 1],
+			['ml', 0.1],
+		],
+		'energy' => [
+			['KiloWatt 28d', 40320],
+			['KiloWatt 7d', 10080],
+			['KiloWatt 24h', 1440],
+			['KiloWatt 12h', 720],
+			['KiloWatt Hour', 60],
+			['KiloWatt Minute', 1],
+		]
+	];
 
+	// Split the input string into unit types
+	$unit_types = array_map('trim', explode(',', $input));
+	$res = '';
+	$valid_unit_types = [];
+	if($unit_types[0] == 'all') {
+
+	} else {
 		foreach ($unit_types as $type) {
 			$type = match (strtolower($type)) {
-				'w', 'weight', '1' => 'weight',
-				'l', 'length', '2' => 'length',
-				'v', 'volume', '3' => 'volume',
-				't', 'temperature', '4' => 'temperature',
-				'c', 'currency', '5' => 'currency',
-				'g', 'generic', '6' => 'generic',
-				
+				'g', 'generic', '1' => 'generic',
+				'w', 'weight', '2' => 'weight',
+				'l', 'length', '3' => 'length',
+				'v', 'volume', '4' => 'volume',
+				'e', 'energy', '5' => 'energy',
+
 				default => null,
 			};
 
@@ -46,45 +73,35 @@
 				$valid_unit_types[$type] = $all_units[$type];
 			}
 		}
+	}
+	// Only add parent optgroup if multiple unit types are specified
+	$use_parent_optgroup = count($valid_unit_types) > 1;
 
-		// Only add parent optgroup if multiple unit types are specified
-		$use_parent_optgroup = count($valid_unit_types) > 1;
-
-		foreach ($valid_unit_types as $type => $categories) {
-			// Add a main optgroup for each unit type only if there are multiple types
-			if ($use_parent_optgroup) {
-				$res .= '<optgroup class="parent" label="' . ucfirst($type) . '">';
-			}
-
-			// Only add sub optgroup if multiple unit types are specified
-			$use_sub_optgroup = count($categories) > 1;
-
-			// Loop through each category within the unit type
-			foreach ($categories as $category => $units) {
-				// Add a sub optgroup for each unit type only if there are multiple types
-				if ($use_sub_optgroup) {
-					$res .= '<optgroup class="sub" label="' . $category . '">';
-				}
-
-				// Add each unit in the category
-				foreach ($units as $unit) {
-					$res .= "<option value='$unit' " . ($unit === $current ? "selected" : "") . ">$unit</option>";
-				}
-
-				// Close sub optgroup if needed
-				if ($use_sub_optgroup) {
-					$res .= '</optgroup>';
-				}
-			}
-
-			// Close parent optgroup if needed
-			if ($use_parent_optgroup) {
-				$res .= '</optgroup>';
-			}
+	foreach ($valid_unit_types as $type => $categories) {
+		// Add a main optgroup for each unit type only if there are multiple types
+		if ($use_parent_optgroup) {
+			$res .= '<optgroup class="parent" label="' . ucfirst($type) . '">';
 		}
 
-		return $res;
+		// Only add sub optgroup if multiple unit types are specified
+		$use_sub_optgroup = count($categories) > 1;
+
+		// Loop through each category within the unit type
+		foreach ($categories as $category) {
+			$value = $category[1];
+			$key = $category[0];
+			// Add each unit in the category
+			$res .= "<option value='$key$value' data-key='$key' " . ($key.$value === $current ? "selected" : "") . ">$key</option>";
+		}
+
+		// Close parent optgroup if needed
+		if ($use_parent_optgroup) {
+			$res .= '</optgroup>';
+		}
 	}
+
+	return $res;
+}
 ?>
 
 <div class="responsive-wrapper" id="price-management">
@@ -116,52 +133,50 @@
 		<style>
 			optgroup[label].parent {
 				font-weight: bold;
-				text-decoration: underline;
 				color: blue;
 			}
-			optgroup[label].sub {
-				font-weight: bold;
-				text-decoration: unset;
-				color: #333;
-			}
-			option {
+			option[label] {
 				font-weight: unset;
-				text-decoration: unset;
-				color: #333;
+				color: black;
 			}
 
 			/* Set the accordion container to flex */
-			#mg-accordion {
-				margin-top: .8rem;
-				display: flex;
-				flex-wrap: wrap;
-				gap: .8rem; /* Adds spacing between the sections */
+			.mg-calculator-container {
+				display: grid;
+				grid-template-columns: repeat(2, 1fr); /* Two columns */
+				grid-template-rows: auto; /* Automatically adjust row height based on content */
+				gap: 1rem; /* Space between items */
+				padding-bottom: 1rem;
 			}
 
 			/* Each accordion section will have a max-width of 50% */
-			#mg-accordion .mg-accordion-section {
-				flex: 1 1 45%; /* Allows two sections per row with some spacing */
-				max-width: 50%;
-				box-sizing: border-box; /* Ensures padding doesn't increase width */
-				padding: .1rem;
-				background: #f7f7f7;
-				border: 0.1rem solid #ccc;
-				border-radius: 1rem;
+			.mg-calculator-container .mg-calculator-section  {
+				background-color: lightgrey;
+				border: 1px solid #ccc;
+				text-align: center;
+				transition: all 0.3s ease; /* Smooth transition for expansion */
+				border-radius: 4px;
+			}
+			.mg-calculator-container .mg-calculator-section h3 {
+				font-size: 1.2rem;
+				padding: 0.5rem;
+				margin: unset;
+				min-height: 1.7rem;
+			}
+			.mg-calculator-container .mg-calculator-section .section-content {
+				display: none;
 			}
 
-			/* Optional: Style the section title */
-			#mg-accordion .mg-accordion-section h3 {
-				font-size: 1.2rem;
-				margin-bottom: 0.5rem;
+			.mg-calculator-container .mg-calculator-section.expanded {
+				background-color: lightblue;
+			}
+			.mg-calculator-container .mg-calculator-section.expanded .section-content {
+				padding: .5rem 1rem;
+				display: block;
 			}
 
 			.mg-options-list {
 				margin-top: 1rem;
-			}
-			#mg-accordion .mg-accordion-section {
-				padding: 1.5rem;
-				border: 0.1rem solid #ccc;
-				background: #f9f9f9;
 			}
 			.mg-options-list .mg-option-header {
 				display: flex;
@@ -169,16 +184,13 @@
 				gap: .5rem;
 				margin-bottom: 0.5rem;
 			}
-			.mg-options-list .mg-option input {
-				width: 40%;
-			}
 			.mg-options-list .mg-option-header h4 {
 				width: 40%;
 				padding-left: .8rem;
 				margin: unset;
 			}
-			.mg-accordion-section .mg-remove-section,
-			.mg-accordion-section .mg-section-allow-multiple {
+			.mg-calculator-section .mg-remove-section,
+			.mg-calculator-section .mg-section-allow-multiple {
 				margin-left: .5rem;
 			}
 			.mg-section-allow-multiple-checkbox {
@@ -191,25 +203,27 @@
 
 
 
-
-			.ac-label {
+			.option-header {
 				font-weight: 700;
+				min-height: 1.2rem;
 				position: relative;
 				padding: 0.5em 1em;
-				margin-bottom: 0.5em;
+				margin-top: 0.5em;
 				display: block;
 				cursor: pointer;
 				background-color: whiteSmoke;
 				transition: background-color 0.15s ease-in-out;
+				border-radius: 4px	;
 			}
 
-			.ac-input:checked + label,
-			.ac-label:hover {
+			.option-toggle:checked + label,
+			.option-header:hover {
 				background-color: #999;
 			}
-
-			.ac-label:after,
-			.ac-input:checked + .ac-label:after {
+			</style>
+			<style name="Accordian">
+			.option-header:after,
+			.option-toggle:checked + .option-header:after {
 				content: "+";
 				position: absolute;
 				display: block;
@@ -221,23 +235,23 @@
 				text-align: center;
 				background-color: #e5e5e5;
 				transition: background-color 0.15s ease-in-out;
+				border-radius: 0px 4px 4px 0px;
 			}
 
-			.ac-label:hover:after,
-			.ac-input:checked + .ac-label:after {
+			.option-header:hover:after,
+			.option-toggle:checked + .option-header:after {
 				background-color: #b5b5b5;
 			}
 
-			.ac-input:checked + .ac-label:after {
+			.option-toggle:checked + .option-header:after {
 				content: "-";
 			}
 
-			.ac-input {
+			.option-toggle {
 				display: none!important;
 			}
 
-			.ac-text,
-			.ac-sub-text {
+			.option-text {
 				opacity: 0;
 				height: 0;
 				margin-bottom: 0.5em;
@@ -245,40 +259,108 @@
 				overflow: hidden;
 			}
 
-			.ac-input:checked ~ .ac-text,
-			.ac-sub .ac-input:checked ~ .ac-sub-text {
+			.option-toggle:checked ~ .option-text {
 				opacity: 1;
 				height: auto;
 			}
-
-			.ac-sub .ac-label {
-				background: none;
-				font-weight: 600;
-				padding: 0.5em 2em;
-				margin-bottom: 0;
+			.option-content {
+				opacity: 0;
+				height: 0;
+				margin-bottom: .5em;
+				transition: opacity .5s ease-in-out;
+				overflow: hidden;
 			}
-
-			.ac-sub .ac-label:checked {
-				background: none;
-				border-bottom: 1px solid whitesmoke;
+			.option-toggle:checked ~ .option-content {
+				opacity: 1;
+				height: auto;
 			}
-
-			.ac-sub .ac-label:after,
-			.ac-sub .ac-input:checked + .ac-label:after {
+			</style>
+			<style name="">
+			.input {
+				position: relative;
+				margin: auto;
+				width: 100%;
+				max-width: 280px;
+				border-radius: 3px;
+				overflow: hidden;
+			}
+			.input .label {
+				position: absolute;
+				top: 0px;
+				left: 12px;
+				font-size: 16px;
+				color: rgba(0, 0, 0, 0.5);
+				font-weight: 500;
+				transform-origin: 0 0;
+				transform: translate3d(0, 0, 0);
+				transition: all 0.2s ease;
+				pointer-events: none;
+				width: max-content;
+			}
+			.input .focus-bg {
+				position: absolute;
+				top: 0;
 				left: 0;
-				background: none;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.05);
+				z-index: -1;
+				transform: scaleX(0);
+				transform-origin: left;
 			}
-
-			.ac-sub .ac-input:checked + label,
-			.ac-sub .ac-label:hover {
-				background: none;
+			.input input,
+			.input select {
+				-webkit-appearance: none;
+				-moz-appearance: none;
+				appearance: none;
+				border: 0;
+				font-family: inherit;
+				height: 3.5rem;
+				background: rgba(0, 0, 0, 0.02);
+				box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+				color: #000;
+				transition: all 0.15s ease;
 			}
-
-			.ac-sub-text {
-				padding: 0 1em 0 2em;
+			.input input:hover,
+			.input select:hover {
+				background: rgba(0, 0, 0, 0.04);
+				box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+			}
+			.input input:not(:-moz-placeholder-shown) + .label {
+				color: rgba(0, 0, 0, 0.5);
+				transform: translate3d(0, -20px, 0) scale(0.75);
+			}
+			.input input:not(:-ms-input-placeholder) + .label {
+				color: rgba(0, 0, 0, 0.5);
+				transform: translate3d(0, -20px, 0) scale(0.75);
+			}
+			.input input:not(:placeholder-shown) + .label {
+				color: rgba(0, 0, 0, 0.5);
+				transform: translate3d(0, -20px, 0) scale(0.75);
+			}
+			.input input:focus,
+			.input select:focus {
+				background: rgba(0, 0, 0, 0.05);
+				outline: none;
+				box-shadow: inset 0 -2px 0 #0077FF;
+			}
+			.input input:focus + .label,
+			.input select:focus + .label {
+				color: #0077FF;
+				transform: translate3d(0, -20px, 0) scale(0.75);
+			}
+			.input select:valid ~ .label {
+				color: #0077FF;
+				transform: translate3d(0, -20px, 0) scale(0.75);
+			}
+			.input input:focus + .label + .focus-bg,
+			.input select:focus + .label + .focus-bg {
+				transform: scaleX(1);
+				transition: all 0.1s ease;
 			}
 		</style>
-
+		<script>
+		</script>
 		<div class="section default" id="defaults">
 			<form method="post" action="options.php">
 				<?php
@@ -289,81 +371,21 @@
 			</form>
 		</div>
 		<div class="section" id="calculator">
-			<div class="container">
-				<form method="post" action="options.php">
-					<h2>Custom Price Calculator Options</h2>
-					<?php
-						settings_fields('mg_dynamic_price_calculator_options');
-						$pricing_data = get_option('mg_dynamic_pricing_data', []);
-					?>
-					<button type="button" class="mg-add-section button">Add Section</button>
+			<form method="post" action="options.php">
+				<?php 
+					settings_fields('mg_product_calculator_group');			// Register settings group
+				?>
+				<textarea class="currentData" hidden>
+					<?=json_encode(get_option('product_calculator_data', []))?>
+				</textarea>
+				<h2>Custom Price Calculator Options</h2>
 
-					<div id="mg-accordion">
-						<?php
-							if (!empty($pricing_data)) {
-								foreach ($pricing_data as $section_index => $section) {
-						?>
-						<div class="mg-accordion-section" data-index="<?=$section_index?>">
-							<strong>
-								<input type="text" name="mg_dynamic_pricing_data[<?=$section_index?>][title]" value="<?=esc_attr($section['title'])?>" placeholder="Title">
-								<button type="button" class="button mg-remove-section">Remove Section</button>
-								<input type="checkbox" name="mg_dynamic_pricing_data[<?=$section_index?>][multiple]" value="1" id="mg_dynamic_pricing_data[<?=$section_index?>][multiple]" <?php echo $section['multiple'] ? 'checked' : ''; ?> style="display: none;" class="mg-section-allow-multiple-checkbox">
-								<label for="mg_dynamic_pricing_data[<?=$section_index?>][multiple]" class="button mg-section-allow-multiple">Allow multiple</label>
-							</strong>
-							<div class="mg-options-list">
-								<?php foreach ($section['options'] as $option_index => $option) { ?>
-									<div class="mg-option">
-										<input class="ac-input" id="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][name]" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][name]" type="checkbox" />
-										<label class="ac-label" for="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][name]"><?=esc_attr($option['name'])?></label>
+				<div class="mg-calculator-container"></div>
 
-										<article class="ac-text">
-										<input type="text" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][name]" value="<?=esc_attr($option['name'])?>" placeholder="Option Name">
-											<?php
-												// Retrieve all stored suppliers data
-												$suppliers_data = get_option('mg_suppliers_data');
+				<button type="button" class="mg-add-section button">Add Section</button>
 
-												// Check if there are suppliers to display in the dropdown
-												if ($suppliers_data && is_array($suppliers_data)) {
-													echo '<select name="mg_dynamic_pricing_data['.$section_index.'][options]['.$option_index.'][supplier]" id="supplier_dropdown">';
-													echo '<option value="">Select a Supplier</option>'; // Default empty option
-													
-													// Loop through each supplier and add it to the dropdown
-													foreach ($suppliers_data as $index => $supplier) {
-														// Ensure the supplier has a 'name' field
-														$selected = esc_attr($option['supplier']) == $supplier['name']? 'selected': '';
-														if (!empty($supplier['name'])) {
-															// Use supplier name as the label and index as the value
-															echo '<option value="' . esc_html($supplier['name']) . '" '.$selected.'>' . esc_html($supplier['name']) . '</option>';
-														}
-													}
-
-													echo '</select>';
-												} else {
-													echo '<p>No suppliers available.</p>';
-												}
-											?>
-											<input type="number" step="0.01" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][buyingQuantity]" value="<?=esc_attr($option['buyingQuantity'])?>" placeholder="Buying Quantity">
-											<select name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][buyingQuantityUnit]">
-												<?=showUnits('weight, generic', esc_attr($option['buyingQuantityUnit']))?>
-											</select>
-											<input type="number" step="0.00001" name="mg_dynamic_pricing_data[<?=$section_index?>][options][<?=$option_index?>][value]" value="<?=esc_attr($option['value'])?>" placeholder="Option Value">
-
-											<a class="button mg-remove-option">Remove</a>
-										</article>
-									</div>
-								<?php }?>
-							</div>
-							<button type="button" class="button mg-add-option" data-section-index="<?=$section_index?>">Add Option</button>
-						</div>
-						<?php
-								}
-							}
-						?>
-					</div>
-
-					<?php submit_button()?>
-				</form>
-			</div>
+				<?php submit_button()?>
+			</form>
 		</div>
 	</div>
 </div>

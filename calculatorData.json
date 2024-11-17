@@ -1,0 +1,132 @@
+[
+    {
+        "title": "Filament (g)",
+        "multiple": "1",
+        "options": [
+            {
+                "key": "0",
+                "name": "PLA",
+                "supplier": "",
+                "buyingUnit": "kg1000",
+                "retailUnit": "gr1",
+                "buyingValue": "17.99",
+                "retailValue": "0.01799"
+            },
+            {
+                "key": "1",
+                "name": "PLA Silk",
+                "supplier": "",
+                "buyingUnit": "kg1000",
+                "retailUnit": "gr1",
+                "buyingValue": "22.99",
+                "retailValue": "0.02299"
+            },
+            {
+                "key": "2",
+                "name": "ABS",
+                "supplier": "",
+                "buyingUnit": "kg1000",
+                "retailUnit": "gr1",
+                "buyingValue": "17.99",
+                "retailValue": "0.01799"
+            }
+        ]
+    },
+    {
+        "title": "Print Time",
+        "options": [
+            {
+                "key": "0",
+                "name": "Minutes",
+                "supplier": "",
+                "buyingUnit": "KiloWatt Hour60",
+                "retailUnit": "KiloWatt Minute1",
+                "buyingValue": "0.25209",
+                "retailValue": "0.00420"
+            },
+            {
+                "key": "1",
+                "name": "Hours",
+                "supplier": "",
+                "buyingUnit": "KiloWatt Hour60",
+                "retailUnit": "KiloWatt Hour60",
+                "buyingValue": "0.25209",
+                "retailValue": "0.25209"
+            },
+            {
+                "key": "2",
+                "name": "12h",
+                "supplier": "",
+                "buyingUnit": "KiloWatt Hour60",
+                "retailUnit": "KiloWatt 12h720",
+                "buyingValue": "0.25209",
+                "retailValue": "3.02508"
+            },
+            {
+                "key": "3",
+                "name": "Days",
+                "supplier": "",
+                "buyingUnit": "KiloWatt Hour60",
+                "retailUnit": "KiloWatt 24h1440",
+                "buyingValue": "0.25209",
+                "retailValue": "6.05016"
+            },
+            {
+                "key": "4",
+                "name": "Weeks",
+                "supplier": "",
+                "buyingUnit": "KiloWatt Hour60",
+                "retailUnit": "KiloWatt 7d10080",
+                "buyingValue": "0.25209",
+                "retailValue": "42.35112"
+            }
+        ]
+    },
+    {
+        "title": "Add-on material",
+        "multiple": "1",
+        "options": [
+            {
+                "key": "0",
+                "name": "Red Ribbon",
+                "supplier": "",
+                "buyingUnit": "m1000",
+                "retailUnit": "cm1",
+                "buyingValue": "5.99",
+                "retailValue": "0.00599"
+            },
+            {
+                "key": "1",
+                "name": "Green Ribbon",
+                "supplier": "",
+                "buyingUnit": "m1000",
+                "retailUnit": "cm1",
+                "buyingValue": "5.99",
+                "retailValue": "0.00599"
+            }
+        ]
+    },
+    {
+        "title": "Shipping",
+        "options": [
+            {
+                "key": "0",
+                "name": "Standard",
+                "supplier": "",
+                "buyingUnit": "Each1",
+                "retailUnit": "Each1",
+                "buyingValue": "",
+                "retailValue": ""
+            },
+            {
+                "key": "1",
+                "name": "Express",
+                "supplier": "",
+                "buyingUnit": "Each1",
+                "retailUnit": "Each1",
+                "buyingValue": "",
+                "retailValue": ""
+            }
+        ]
+    }
+]
