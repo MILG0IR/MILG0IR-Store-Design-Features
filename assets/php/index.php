@@ -131,11 +131,10 @@
 				<a href="#summary"> Summary </a>
 				<a href="#configuration"> Configuration </a>
 				<a href="#price-management"> Price Management </a>
-				<a href="#blocks"> Installed Blocks </a>
 				<a href="#management"> Management </a>
 			</nav>
 		</div>
-		<button href="#" class="header-nav-btn btn">
+		<button href="#" class="header-nav-btn">
 			<i class="dashicons dashicons-menu"></i>
 			<span>Menu</span>
 		</button>

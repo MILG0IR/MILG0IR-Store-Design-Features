@@ -144,14 +144,14 @@ function showUnits($input, $current) {
 				<?php 
 					settings_fields('mg_product_calculator_group');			// Register settings group
 				?>
-				<textarea class="currentData" hidden>
+				<textarea class="currentMaterialData" hidden>
 					<?=json_encode(get_option('product_calculator_data', []))?>
 				</textarea>
 				<h2>Custom Price Calculator Options</h2>
 
-				<div class="mg-calculator-container"></div>
+				<div class="mg-masonry-container calculator-container"></div>
 
-				<button type="button" class="mg-add-section button">Add Section</button>
+				<button type="button" class="mg-add-material-section button">Add Section</button>
 
 				<?php submit_button()?>
 			</form>

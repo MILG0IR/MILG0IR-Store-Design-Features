@@ -20,14 +20,16 @@ jQuery(document).ready(function ($) {
 	/**
 	 * Define the variables
 	 */
-	let sectionCounter = 0; // Initialize a counter to track the sections
+	let supplierSectionCounter = 0,
+		materialSectionCounter = 0;
 
 	// Show the correct section when the page loads
 	if ($('main.milg0ir').length > 0) {
 		showSection();
 		toggleFields();
 
-		autoPopulateSections();
+		autoPopulateMaterialSections();
+		autoPopulateSupplierSections();
 	}
 	if ($('#mg_price_calculator').length > 0) {
 		calculateSuggestedPrice();
@@ -40,7 +42,8 @@ jQuery(document).ready(function ($) {
 	modeDropdown.on('change', toggleFields);
 	$('.mg-price-calculator-section select, .mg-price-calculator-section input[type="number"]').on('change', calculateSuggestedPrice);
 
-	$('.mg-add-section').on('click', () => { addNewOption(addNewSection()) });
+	$('.mg-add-supplier-section').on('click', () => { addNewMaterialOption(addNewMaterialSection()) });
+	$('.mg-add-material-section').on('click', () => { addNewSupplierSection() });
 	$('.header-nav-btn').on('click', () => { $('.header-navigation').toggleClass('open') });
 	$('.header-navigation-links a').on('click', () => { $('.header-navigation').removeClass('open') });
 	$('.option-buyingPrice, .option-retailUnit, .option-buyingUnit').on('input', calculateRetailPrice);
@@ -106,30 +109,68 @@ jQuery(document).ready(function ($) {
 		priceBasedFields.closest('tr').toggle(selectedMode === 'price_based');
 		hybridFields.closest('tr').toggle(selectedMode === 'hybrid');
 	}
-	/* Price Suggestion Calculator - Admin page */
-	function addNewSection() {
-		const newSection = $('<div>', { class: 'mg-calculator-section', 'data-index': sectionCounter }).append(
+	/* Suppliers - Admin page */
+	function addNewSupplierSection() {
+		let name= 'mg_suppliers_data['+supplierSectionCounter+']';
+
+		const newSection = $('<div>', { class: 'mg-masonry-section', 'data-index': supplierSectionCounter }).append(
 			$('<h3>', {
 				class: 'section-title',
-				text: 'Section ' + sectionCounter,
+				text: 'Section ' + supplierSectionCounter,
 			}),
 			$('<content>', { class: 'section-content' }).append(
 
-				$('<label>', { class: 'input', for: 'section_' + sectionCounter + '_title' }).append(
-					$('<input>', { class: 'section-title-edit', type: 'text', placeholder: 'Section ' + sectionCounter, value: 'Section ' + sectionCounter, name: 'product_calculator_data[' + sectionCounter + '][name]' }),
+				$('<label>', { class: 'input', for: name+'[title]' }).append(
+					$('<input>', { class: 'section-title-edit', name: name+'[name]', id: name+'[name]', type: 'text', placeholder: 'Section ' + supplierSectionCounter, value: 'Section ' + supplierSectionCounter, required: true }),
 					$('<span>', { class: 'label', text: 'Name' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-nametag' })
+					)
 				),
 
 				$('<input>', { class: 'remove-section button', type: 'button', value: 'Remove the section' }),
-				$('<input>', { class: 'add-option button', type: 'button', value: 'Add an option' }),
-				$('<div>', { class: 'options-container' })
+				$('<div>', { class: 'options-container' }).append(
+
+					$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'text', hidden: true }),
+
+					$('<label>', { class: 'input', for: name + '[phone]' }).append(
+						$('<input>', { class: 'option-phone', name: name + '[phone]', id: name + '[phone]', type: 'phone', placeholder: ' ' }),
+						$('<span>', { class: 'label', text: 'Phone Number' }),
+						$('<button>', { type: 'submit' }).append(
+							$('<i>', { class: 'dashicons dashicons-phone' }),
+						)
+					),
+
+					$('<label>', { class: 'input', for: name + '[email]' }).append(
+						$('<input>', { class: 'option-email', name: name + '[email]', id: name + '[email]', type: 'email', placeholder: ' ' }),
+						$('<span>', { class: 'label', text: 'E-Mail Address' }),
+						$('<button>', { type: 'submit' }).append(
+							$('<i>', { class: 'dashicons dashicons-email' }),
+						)
+					),
+
+					$('<label>', { class: 'input', for: name + '[url]' }).append(
+						$('<input>', { class: 'option-url', name: name + '[url]', id: name + '[url]', type: 'url', placeholder: ' ' }),
+						$('<span>', { class: 'label', text: 'Website' }),
+						$('<button>', { type: 'submit' }).append(
+							$('<i>', { class: 'dashicons dashicons-admin-site-alt3' }),
+						)
+					),
+
+					$('<label>', { class: 'input', for: name + '[description]' }).append(
+						$('<input>', { class: 'option-description', name: name + '[description]', id: name + '[description]', type: 'text', placeholder: ' ' }),
+						$('<span>', { class: 'label', text: 'Breif Description' }),
+						$('<button>', { type: 'submit' }).append(
+							$('<i>', { class: 'dashicons dashicons-welcome-write-blog' }),
+						)
+					)
+				)
 			)
 		)
 
 		// Attach listeners specifically to the newly added section
 		newSection.find('.remove-section').on('click', removeSection);
-		newSection.find('.add-option').on('click', (addNewOption));
+		newSection.find('.add-option').on('click', (addNewMaterialOption));
 		newSection.find('.section-title').on('click', toggleSection);
 
 		newSection.find('.section-title-edit').on('input', function () {
@@ -138,19 +179,87 @@ jQuery(document).ready(function ($) {
 		});
 
 		// Append the new section to the container
-		$('.mg-calculator-container').append(newSection);
+		$('.supplier-container').append(newSection);
 
 		// Increment the counter every time a new section is added
-		sectionCounter++;
+		supplierSectionCounter++;
+		return newSection;
+	}
+	function autoPopulateSupplierSections() {
+
+		// Get the JSON data from the hidden input field
+		let sectionsJSON = $('.currentSupplierData').val();
+
+		// Parse the JSON data into an object
+		let sectionsData = JSON.parse(sectionsJSON);
+
+
+		// Loop through each section in the JSON data
+		sectionsData.forEach((section, sectionIndex) => {
+			let newSection = addNewSupplierSection();
+			newSection.find('.section-title').text(section.name);
+			newSection.find('.section-title-edit').val(section.name);
+
+			// Loop through each key-value pair in the section object
+			Object.keys(section).forEach((key) => {
+				$(newSection).find('.option-' + key).val(section[key]); // Now assign the class and value to the input elements
+			});
+		});
+	}
+	/* Price Suggestion Calculator - Admin page */
+	function addNewMaterialSection() {
+		let name = 'product_calculator_data[' + materialSectionCounter + ']'
+		const newSection = $('<div>', { class: 'mg-masonry-section', 'data-index': materialSectionCounter }).append(
+			$('<h3>', {
+				class: 'section-title',
+				text: 'Section ' + materialSectionCounter,
+			}),
+			$('<content>', { class: 'section-content' }).append(
+
+				$('<label>', { class: 'input', for: 'section_' + materialSectionCounter + '_title' }).append(
+					$('<input>', { class: 'section-title-edit', type: 'text', placeholder: ' ', value: 'Section ' + materialSectionCounter, name: name + '[name]' }),
+					$('<span>', { class: 'label', text: 'Name' }),
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-nametag' }),
+					)
+				),
+
+				$('<div>', { class: 'buttons-container' }).append(
+					$('<input>', { class: 'remove-section button', type: 'button', value: 'Remove the section', style: 'width: 50%' }),
+					$('<input>', { class: 'add-option button', type: 'button', value: 'Add an option', style: 'width: 50%' }),
+					$('<label>', { class: 'toggle', for: name + '[multiple]', text: 'Allow multiple' }).append(
+						$('<input>', { class: 'allow-multiple button', type: 'checkbox', name: name + '[multiple]', id: name + '[multiple]' }),
+						$('<span>', { }),
+					),
+				),
+				$('<div>', { class: 'options-container' })
+			)
+		)
+
+		// Attach listeners specifically to the newly added section
+		newSection.find('.remove-section').on('click', removeSection);
+		newSection.find('.add-option').on('click', (addNewMaterialOption));
+		newSection.find('.section-title').on('click', toggleSection);
+
+		newSection.find('.section-title-edit').on('input', function () {
+			const newTitle = $(this).val(); // Get the new title from the input field
+			newSection.find('.section-title').text(newTitle); // Update the title
+		});
+
+		// Append the new section to the container
+		$('.calculator-container').append(newSection);
+
+		// Increment the counter every time a new section is added
+		materialSectionCounter++;
 		return newSection;
 	}
 	function toggleSection() {
-		$(this).closest('.mg-calculator-section').toggleClass('expanded'); // Toggle expanded class
+		$(this).closest('.mg-masonry-section').toggleClass('expanded'); // Toggle expanded class
 	}
 	function removeSection() {
-		$(this).closest('.mg-calculator-section').remove(); // Remove the parent section
+		$(this).closest('.mg-masonry-section').remove(); // Remove the parent section
 	}
-	function addNewOption(parentElement) {
+	function addNewMaterialOption(parentElement) {
 		let parent;
 
 		// Determine the parent container
@@ -160,8 +269,8 @@ jQuery(document).ready(function ($) {
 			parent = $(parentElement.target); // Explicit parent element provided
 		}
 
-		let sectionIndex = parent.closest('.mg-calculator-section').data('index')
-		let optionIndex = parent.siblings('.options-container').children().length;
+		let sectionIndex = parent.closest('.mg-masonry-section').data('index')
+		let optionIndex = parent.parent().siblings('.options-container').children().length;
 		let name = 'product_calculator_data[' + sectionIndex + '][options][' + optionIndex + ']';
 
 		// Create the new option element
@@ -172,9 +281,11 @@ jQuery(document).ready(function ($) {
 				$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'text', value: optionIndex, hidden: true }),
 
 				$('<label>', { class: 'input', for: name + '[name]' }).append(
-					$('<input>', { class: 'option-name', name: name + '[name]', id: name + '[name]', type: 'text', placeholder: '', value: 'Option ' + optionIndex }),
+					$('<input>', { class: 'option-name', name: name + '[name]', id: name + '[name]', type: 'text', value: 'Option ' + optionIndex, placeholder: ' ', required: true }),
 					$('<span>', { class: 'label', text: 'Name' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-nametag' }),
+					)
 				),
 
 				$('<label>', { class: 'input', for: name + '[supplier]' }).append(
@@ -187,7 +298,9 @@ jQuery(document).ready(function ($) {
 						)
 					),
 					$('<span>', { class: 'label', text: 'Supplier' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-archive' }),
+					)
 				),
 
 				$('<label>', { class: 'input', for: name + '[buyingUnit]' }).append(
@@ -204,7 +317,9 @@ jQuery(document).ready(function ($) {
 						)
 					),
 					$('<span>', { class: 'label', text: 'Buying Unit' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-performance' }),
+					)
 				),
 
 				$('<label>', { class: 'input', for: name + '[retailUnit]' }).append(
@@ -221,27 +336,33 @@ jQuery(document).ready(function ($) {
 						)
 					),
 					$('<span>', { class: 'label', text: 'Retail Unit' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-performance' }),
+					)
 				),
 
 				$('<label>', { class: 'input', for: name + '[buyingPrice]' }).append(
-					$('<input>', { class: 'option-buyingPrice', name: name + '[buyingPrice]', type: 'text', placeholder: ' ' }),
+					$('<input>', { class: 'option-buyingPrice', name: name + '[buyingPrice]', type: 'text', placeholder: ' ', required: true }),
 					$('<span>', { class: 'label', text: 'Buying Price' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-money' }),
+					)
 				),
 
 				$('<label>', { class: 'input', for: name + '[retailPrice]' }).append(
+					$('<input>', { class: 'option-retailPrice', name: name + '[retailPrice]', type: 'hidden' }),
 					$('<input>', { class: 'option-retailPrice', name: name + '[retailPrice]', type: 'text', placeholder: ' ', disabled: true }),
-					$('<input>', { class: 'option-retailPrice', name: name + '[retailPrice]', type: 'text', placeholder: ' ', hidden: true }),
 					$('<span>', { class: 'label', text: 'Retail Price' }),
-					$('<span>', { class: 'focus-bg' })
+					$('<button>', { type: 'submit' }).append(
+						$('<i>', { class: 'dashicons dashicons-money' }),
+					)
 				),
 
 				$('<a>', { class: 'option-remove button', text: 'Remove' }),
 			)
 		)
 		// Append the new option to the options container
-		parent.siblings('.options-container').append(newOption);
+		parent.parent().siblings('.options-container').append(newOption);
 
 		// Attach event listeners to the new option
 		newOption.find('.option-name').on('input', function () {
@@ -255,10 +376,10 @@ jQuery(document).ready(function ($) {
 		newOption.find('.mg-price-calculator-section select, .mg-price-calculator-section input[type="number"]').on('click', calculateSuggestedPrice)
 		return newOption;
 	}
-	function autoPopulateSections() {
+	function autoPopulateMaterialSections() {
 
 		// Get the JSON data from the hidden input field
-		let sectionsJSON = $('.currentData').val();
+		let sectionsJSON = $('.currentMaterialData').val();
 
 		// Parse the JSON data into an object
 		let sectionsData = JSON.parse(sectionsJSON);
@@ -266,15 +387,16 @@ jQuery(document).ready(function ($) {
 
 		// Loop through each section in the JSON data
 		sectionsData.forEach((section, sectionIndex) => {
-			let newSection = addNewSection();
+			let newSection = addNewMaterialSection();
 			newSection.find('.section-title').text(section.name);
 			newSection.find('.section-title-edit').val(section.name);
+			newSection.find('.allow-multiple').attr('checked', section.multiple=='on'?true:false);
 
 			section.options.forEach((option, optionIndex) => {
-				let newOption = addNewOption(newSection);
+				let newOption = addNewMaterialOption(newSection);
 				$(newOption).find('.option-header').text(option.name);
 				Object.keys(option).forEach((key) => {
-					$(newOption).find('.option-' + key).val(option[key]); // Now assign the class and value to the input elements
+					$(newSection).find('.option-' + key).val(option[key]); // Now assign the class and value to the input elements
 				});
 			});
 		});
@@ -296,7 +418,6 @@ jQuery(document).ready(function ($) {
 			$section.css("grid-row", "span 1");
 		}
 	};
-	const pxToRem = (px) => px / parseFloat($("html").css("font-size")); // Helper to convert px to rem
 	/* Calculate the material retail price */
 	function calculateRetailPrice() {
 		// Find the closest form section (container) to ensure calculations are material-specific
@@ -349,7 +470,7 @@ jQuery(document).ready(function ($) {
 
 
 
-	$(".mg-calculator-section").each(function () {
+	$(".mg-masonry-section").each(function () {
 		updateSectionRows($(this)); // Initial calculation
 		resizeObserver.observe(this); // Observe changes
 	});
