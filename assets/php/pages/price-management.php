@@ -142,7 +142,7 @@ function showUnits($input, $current) {
 		<div class="section" id="calculator">
 			<form method="post" action="options.php">
 				<?php 
-					settings_fields('mg_product_calculator_group');			// Register settings group
+					//settings_fields('mg_product_calculator_group');			// Register settings group
 				?>
 				<textarea class="currentMaterialData" hidden>
 					<?=json_encode(get_option('product_calculator_data', []))?>

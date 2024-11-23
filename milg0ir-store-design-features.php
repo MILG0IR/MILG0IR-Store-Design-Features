@@ -73,6 +73,13 @@
 		wp_enqueue_style('milg0ir-store-style', plugin_dir_url(__FILE__) . 'assets/css/main.css', array(), '1.0.0');
 		wp_enqueue_style('milg0ir-store-icons', plugin_dir_url(__FILE__) . 'assets/css/icons.css', array(), '1.0.0');
 
+		wp_enqueue_script('milg0ir-analytics-script', plugin_dir_url(__FILE__) . 'assets/js/analytics.js', array('jquery'), '1.0.0', true);
+		wp_localize_script('milg0ir-analytics-script', 'mg_analytics', [
+			'ajax_url' => admin_url('admin-ajax.php'),
+			'nonce' => wp_create_nonce('analytics_nonce'),
+			'session_id' => wp_get_session_token(), // Ensure this is correctly set or handled
+			'user_id' => get_current_user_id() ?: 0, // If no user logged in, send 0
+		]);
 		wp_enqueue_script('milg0ir-store-script', plugin_dir_url(__FILE__) . 'assets/js/main.js', array('jquery'), '1.0.0', true);
 		wp_localize_script('milg0ir-store-script', 'mg_localization', [
 			'stampCardEnabled' => get_option('mg_stamp_card_enabled'),
@@ -324,57 +331,6 @@
 		));
 
 	});
-//////////!           CUSTOM REST API            !//////////
-	add_action('rest_api_init', function () {
-		register_rest_route('milg0ir/v1', '/stamp-card-data', array(
-			'methods' => 'POST',
-			'callback' => 'get_stamp_card_data',
-			'permission_callback' => '__return_true', // Adjust this for security
-		));
-	});
-
-	function get_stamp_card_data(WP_REST_Request $request) {
-		// Retrieve the cart total
-		$cart_total = $request->get_param('cart_total');
-		$config = [
-			'mg_stamp_card_enabled' => get_option('mg_stamp_card_enabled'),
-			'mg_stamp_card_mode' => get_option('mg_stamp_card_mode'),
-			'mg_min_order_value' => get_option('mg_min_order_value'),
-			'mg_price_based_value' => get_option('mg_price_based_value'),
-			'mg_hybrid_discount_percentage' => get_option('mg_hybrid_discount_percentage'),
-		];
-
-		// Calculate the number of stamps
-		$number_of_stamps = 0;
-		$message = '';
-
-		if ($cart_total >= $config['mg_min_order_value']) {
-			if ($config['mg_stamp_card_mode'] === 'order_based') {
-				$message = 'You can earn a stamp with this order!';
-			} elseif ($config['mg_stamp_card_mode'] === 'value_based') {
-				$number_of_stamps = floor($cart_total / $config['mg_price_based_value']);
-				$message = "You can earn {$number_of_stamps} stamp(s) with this order!";
-			} elseif ($config['mg_stamp_card_mode'] === 'hybrid') {
-				$value = round(($cart_total / 100) * $config['mg_hybrid_discount_percentage'], 2);
-				$message = "Your stamp may be worth {$value} off a future order!";
-			} else {
-				$message = 'Invalid stamp card mode!';
-			}
-		} else {
-			$difference = $mg_min_order_value - $cart_total;
-			$message = "You are {$difference} away from earning a stamp!";
-		}
-
-		return new WP_REST_Response([
-			'stampsEnabled' => $mg_stamp_card_enabled,
-			'number_of_stamps' => $number_of_stamps,
-			'message' => $message,
-			'info' => [
-				'cartTotal' => $cart_total,
-				'config' => $config
-			]
-		], 200);
-	}
 //////////!               DATABASE               !//////////
 	function mg_get_existing_schema($table_name) {
 		global $wpdb;
@@ -427,14 +383,14 @@
 	}
 
 //////////!              STAMP CARD              !//////////
-	function update_for_stampcard_table() {
+	function update_stampcard_table() {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mg_stampcards';
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$existing_schema = mg_get_existing_schema($table_name);
 		$desired_schema = "CREATE TABLE `$table_name` (
-			`id` BIGINT(20) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+			`id` BIGINT(20) UNSIGNED AUTO_INCREMENT,
 			`user_id` BIGINT(20) UNSIGNED NOT NULL,
 			`order_id` BIGINT(20) UNSIGNED DEFAULT NULL,
 			`total_stamps` INT(11) NOT NULL,
@@ -442,11 +398,16 @@
 			`stamp_value` DECIMAL(10, 2) DEFAULT 0.00,
 			`redeemed` BOOLEAN DEFAULT FALSE,
 			UNIQUE KEY user_stamp_unique (`user_id`, `order_id`),
-			FOREIGN KEY (`user_id`) REFERENCES wp_users(ID) ON DELETE CASCADE
+			PRIMARY KEY (`id`),
+			FOREIGN KEY (`user_id`) REFERENCES `wp_users` (`ID`) ON DELETE CASCADE
 		) $charset_collate;";
-		mg_update_database($desired_schema, $existing_schema);
+		if($existing_schema == null) {
+			$wpdb->query($desired_schema);
+		} else {
+			mg_update_database($desired_schema, $existing_schema);
+		}
 	}
-	register_activation_hook(__FILE__, 'update_for_stampcard_table');
+	register_activation_hook(__FILE__, 'update_stampcard_table');
 
 //////////!          STAMP CARD OPTIONS          !//////////
 	add_action('admin_init', function() {
@@ -567,14 +528,66 @@
 				</p>
 			');
 	}
+
+//////////!         STAMP CARD REST API          !//////////
+	add_action('rest_api_init', function () {
+		register_rest_route('milg0ir/v1', '/stamp-card-data', array(
+			'methods' => 'POST',
+			'callback' => 'get_stamp_card_data',
+			'permission_callback' => '__return_true', // Adjust this for security
+		));
+	});
+
+	function get_stamp_card_data(WP_REST_Request $request) {
+		// Retrieve the cart total
+		$cart_total = $request->get_param('cart_total');
+		$config = [
+			'mg_stamp_card_enabled' => get_option('mg_stamp_card_enabled'),
+			'mg_stamp_card_mode' => get_option('mg_stamp_card_mode'),
+			'mg_min_order_value' => get_option('mg_min_order_value'),
+			'mg_price_based_value' => get_option('mg_price_based_value'),
+			'mg_hybrid_discount_percentage' => get_option('mg_hybrid_discount_percentage'),
+		];
+
+		// Calculate the number of stamps
+		$number_of_stamps = 0;
+		$message = '';
+
+		if ($cart_total >= $config['mg_min_order_value']) {
+			if ($config['mg_stamp_card_mode'] === 'order_based') {
+				$message = 'You can earn a stamp with this order!';
+			} elseif ($config['mg_stamp_card_mode'] === 'value_based') {
+				$number_of_stamps = floor($cart_total / $config['mg_price_based_value']);
+				$message = "You can earn {$number_of_stamps} stamp(s) with this order!";
+			} elseif ($config['mg_stamp_card_mode'] === 'hybrid') {
+				$value = round(($cart_total / 100) * $config['mg_hybrid_discount_percentage'], 2);
+				$message = "Your stamp may be worth {$value} off a future order!";
+			} else {
+				$message = 'Invalid stamp card mode!';
+			}
+		} else {
+			$difference = $mg_min_order_value - $cart_total;
+			$message = "You are {$difference} away from earning a stamp!";
+		}
+
+		return new WP_REST_Response([
+			'stampsEnabled' => $mg_stamp_card_enabled,
+			'number_of_stamps' => $number_of_stamps,
+			'message' => $message,
+			'info' => [
+				'cartTotal' => $cart_total,
+				'config' => $config
+			]
+		], 200);
+	}
 //////////!               WISHLIST               !//////////
-	function update_for_wishlist_table() {
+	function update_wishlist_table() {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'mg_wishlists';
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$existing_schema = mg_get_existing_schema($table_name);
-		$desired_schema = "CREATE TABLE `".$table_name."` (
+		$desired_schema = "CREATE TABLE `$table_name` (
 			`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			`user_id` bigint(20) unsigned NOT NULL,
 			`product_id` bigint(20) unsigned NOT NULL,
@@ -582,12 +595,16 @@
 			`date_added` datetime DEFAULT current_timestamp(),
 			`date_removed` datetime DEFAULT NULL,
 			`product_options` TEXT,
-			PRIMARY KEY (`id`)
-			FOREIGN KEY (`user_id`) REFERENCES wp_users(ID) ON DELETE CASCADE
+			PRIMARY KEY (`id`),
+			FOREIGN KEY (`user_id`) REFERENCES `wp_users` (`ID`) ON DELETE CASCADE
 		) $charset_collate;";
-		mg_update_database($desired_schema, $existing_schema);
+		if($existing_schema == null) {
+			$wpdb->query($desired_schema);
+		} else {
+			mg_update_database($desired_schema, $existing_schema);
+		}
 	}
-	register_activation_hook(__FILE__, 'update_for_wishlist_table');
+	register_activation_hook(__FILE__, 'update_wishlist_table');
 
 	function mg_get_wishlist($user_id) {
 		global $wpdb;
@@ -927,9 +944,8 @@
 			</p>
 		');
 	}
-
-
-//////////!          TAXONOMIES OPTIONS          !////////// TODO: Custom taxonomies, create up to 100 seperate taxonomies
+//////////!             TAXONOMIES               !////////// TODO: Custom taxonomies,
+//////////!          TAXONOMIES OPTIONS          !////////// create up to 100 seperate taxonomies
 	add_action('admin_init', function() {
 		// Register settings for the stamp card mode and enable/disable option
 		register_setting('mg_taxonomies_settings_group', 'mg_taxonomies_enabled', [ 'default' => MG_TAXONOMIES_DEFAULTS['enabled'] ]);
@@ -972,4 +988,107 @@
 				</p>
 			');
 	}
+//////////!               ANALYTICS              !//////////
+	function update_analytics_table() {
+		global $wpdb;
+		$table_name = $wpdb->prefix . 'mg_user_analytics';
+		$charset_collate = $wpdb->get_charset_collate();
+
+		$existing_schema = mg_get_existing_schema($table_name);
+		$desired_schema = "CREATE TABLE `$table_name`(
+			`id` BIGINT AUTO_INCREMENT,
+			`session_id` VARCHAR(64) NOT NULL NULL,
+			`user_id` BIGINT(20) UNSIGNED NULL NULL,
+			`timestamp` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, NULL
+			`action_type` VARCHAR(50) NOT NULL NULL,
+			`page_url` TEXT NULL,
+			`next_page_url` TEXT NULL,
+			`page_load_time` FLOAT NULL,
+			`time_spent` FLOAT NULL,
+			`mouse_pos_x` INT(20) NULL,
+			`mouse_pos_y` INT(20) NULL,
+			`viewport_height` FLOAT NULL,
+			`viewport_width` FLOAT NULL,
+			`additional_data` LONGTEXT NULL,
+			PRIMARY KEY (`id`),
+			FOREIGN KEY (`user_id`) REFERENCES `wp_users` (`ID`) ON DELETE CASCADE
+		) $charset_collate;";
+		mg_update_database($desired_schema, $existing_schema);
+	}
+	register_activation_hook(__FILE__, 'update_analytics_table');
+
+//////////!          ANALYTICS OPTIONS           !//////////
+//////////!          ANALYTICS REST API          !//////////
+	add_action('admin_menu', function () {
+		add_menu_page(
+			'User Analytics',
+			'Analytics',
+			'manage_options',
+			'user-analytics',
+			'display_analytics_page',
+			'dashicons-chart-line',
+			5
+		);
+	});
+	function display_analytics_page() {
+		echo '<div id="analytics-root"></div>'; // For React or vanilla JS app
+	}
+	
+	function log_analytics_data() {
+		global $wpdb;
+		check_ajax_referer('analytics_nonce', '_ajax_nonce');
+
+		$session_id = sanitize_text_field($_POST['session_id'] ?? null);
+		$user_id = intval($_POST['user_id'] ?? null);
+		$action_type = sanitize_text_field($_POST['action_type'] ?? null);
+		$page_url = esc_url_raw($_POST['page_url'] ?? null);
+		$next_page_url = esc_url_raw($_POST['next_page_url'] ?? null);
+		$page_load_time = floatval($_POST['page_load_time'] ?? null);
+		$time_spent = floatval($_POST['time_spent'] ?? null);
+		$mouse_pos_x = intval($_POST['x'] ?? null);
+		$mouse_pos_y = intval($_POST['y'] ?? null);
+		$viewport_height = floatval($_POST['viewport_height'] ?? null);
+		$viewport_width = floatval($_POST['viewport_width'] ?? null);
+		$next_page_url = esc_url_raw($_POST['next_page_url'] ?? null);
+		$additional_data = isset($_POST['additional_data']) 
+			? wp_json_encode(sanitize_text_field(wp_unslash($_POST['additional_data']))) 
+			: null;
+
+			// Validate the additional data JSON
+		if (isset($_POST['additional_data'])) {
+			$decoded_data = json_decode(stripslashes($_POST['additional_data']), true);
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				wp_send_json_error('Invalid JSON in additional data.', 400);
+			}
+			$additional_data = wp_json_encode($decoded_data);
+		} else {
+			$additional_data = null;
+		}
+		// Insert into your analytics table
+		$res = $wpdb->insert(
+			"{$wpdb->prefix}mg_user_analytics",
+			[
+				'session_id' => $session_id,
+				'user_id' => $user_id,
+				'action_type' => $action_type,
+				'page_url' => $page_url,
+				'next_page_url' => $next_page_url,
+				'page_load_time' => $page_load_time,
+				'time_spent' => $time_spent,
+				'mouse_pos_x' => $mouse_pos_x,
+				'mouse_pos_y' => $mouse_pos_y,
+				'viewport_height' => $viewport_height,
+				'viewport_width' => $viewport_width,
+				'additional_data' => $additional_data,
+			],
+			['%s', '%d', '%s', '%s', '%s', '%f', '%f', '%d', '%d', '%f', '%f', '%s', '%s']
+		);
+		if ($res === false) {
+			$error_message = $wpdb->last_error ? $wpdb->last_error : 'Failed to log analytics data';
+			wp_send_json_error(['message' => $error_message], 500);
+		}
+		wp_send_json_success('Analytics data logged.');
+	}
+	add_action('wp_ajax_log_analytics_data', 'log_analytics_data');
+	add_action('wp_ajax_nopriv_log_analytics_data', 'log_analytics_data');
 //////////!										 !//////////

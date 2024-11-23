@@ -16,7 +16,6 @@ jQuery(document).ready(function ($) {
 	const priceBasedFields = $('.price_based');
 	const hybridFields = $('.hybrid_based');
 
-
 	/**
 	 * Define the variables
 	 */
@@ -42,8 +41,8 @@ jQuery(document).ready(function ($) {
 	modeDropdown.on('change', toggleFields);
 	$('.mg-price-calculator-section select, .mg-price-calculator-section input[type="number"]').on('change', calculateSuggestedPrice);
 
-	$('.mg-add-supplier-section').on('click', () => { addNewMaterialOption(addNewMaterialSection()) });
-	$('.mg-add-material-section').on('click', () => { addNewSupplierSection() });
+	$('.mg-add-supplier-section').on('click', () => { addNewSupplierSection() });
+	$('.mg-add-material-section').on('click', () => { addNewMaterialOption(addNewMaterialSection()) });
 	$('.header-nav-btn').on('click', () => { $('.header-navigation').toggleClass('open') });
 	$('.header-navigation-links a').on('click', () => { $('.header-navigation').removeClass('open') });
 	$('.option-buyingPrice, .option-retailUnit, .option-buyingUnit').on('input', calculateRetailPrice);
@@ -128,7 +127,7 @@ jQuery(document).ready(function ($) {
 					)
 				),
 
-				$('<input>', { class: 'remove-section button', type: 'button', value: 'Remove the section' }),
+				$('<input>', { class: 'remove-section button', type: 'button', value: 'Remove this Supplier' }),
 				$('<div>', { class: 'options-container' }).append(
 
 					$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'text', hidden: true }),
@@ -278,7 +277,7 @@ jQuery(document).ready(function ($) {
 			$('<input>', { type: 'checkbox', class: 'option-toggle', id: name + '[open]', name: name + '[open]', hidden: true }),
 			$('<label>', { text: 'Option ' + optionIndex, class: 'option-header', for: name + '[open]' }),
 			$('<article>', { class: 'option-content' }).append(
-				$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'text', value: optionIndex, hidden: true }),
+				$('<input>', { class: 'option-key', name: name + '[key]', id: name + '[key]', type: 'hidden', value: optionIndex }),
 
 				$('<label>', { class: 'input', for: name + '[name]' }).append(
 					$('<input>', { class: 'option-name', name: name + '[name]', id: name + '[name]', type: 'text', value: 'Option ' + optionIndex, placeholder: ' ', required: true }),
@@ -396,6 +395,7 @@ jQuery(document).ready(function ($) {
 				let newOption = addNewMaterialOption(newSection);
 				$(newOption).find('.option-header').text(option.name);
 				Object.keys(option).forEach((key) => {
+					console.log(`Key: ${key}, Value: ${option[key]}`);
 					$(newSection).find('.option-' + key).val(option[key]); // Now assign the class and value to the input elements
 				});
 			});
