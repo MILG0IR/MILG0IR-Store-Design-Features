@@ -5,17 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v0.0.7-unreleased]
+## [v0.0.8-unreleased]
 
 ### Added
 
-- Price calculator estimator/suggestor
+- INDEV: Analytics system for more detailed stats.
 
 ### Fixed
 
 ### Changed
 
 ### Delayed Changes
+
+## [v0.0.7]
+
+### Added
+
+- Price calculator estimator/suggestor.
+- Supplier and product material location.
 
 ## [v0.0.6]
 

@@ -3,7 +3,7 @@
  * Plugin Name: MILG0IR Store Design & Features
  * Description: Enhances store functionality and design for MILG0IR stores.
  * Plugin URI:	https://github.com/MILG0IR/MILG0IR-Store-Design-Features
- * Version:		0.0.6
+ * Version:		0.0.7
  * Author:		MILG0IR Group
  * Author URI:	https://milg0ir.co.uk
  * Text Domain: milg0ir-store
@@ -1018,22 +1018,7 @@
 	register_activation_hook(__FILE__, 'update_analytics_table');
 
 //////////!          ANALYTICS OPTIONS           !//////////
-//////////!          ANALYTICS REST API          !//////////
-	add_action('admin_menu', function () {
-		add_menu_page(
-			'User Analytics',
-			'Analytics',
-			'manage_options',
-			'user-analytics',
-			'display_analytics_page',
-			'dashicons-chart-line',
-			5
-		);
-	});
-	function display_analytics_page() {
-		echo '<div id="analytics-root"></div>'; // For React or vanilla JS app
-	}
-	
+//////////!          ANALYTICS REST API          !//////////	
 	function log_analytics_data() {
 		global $wpdb;
 		check_ajax_referer('analytics_nonce', '_ajax_nonce');
